@@ -1,3 +1,5 @@
+#![allow(unstable)]
+
 //! Combinatorial phantom types for discrete mathematics.
 //!
 //! All discrete spaces has the following functions:
@@ -29,6 +31,16 @@
 
 use std::num::Float;
 
+pub use construct::Construct;
+pub use count::Count;
+pub use to_index::ToIndex;
+pub use to_pos::ToPos;
+
+mod construct;
+mod count;
+mod to_index;
+mod to_pos;
+
 /// Used by the final subspace.
 #[derive(Copy)]
 pub struct Data;
@@ -46,9 +58,6 @@ pub struct DimensionN<T>;
 /// Dimension is natural number, position is a list of numbers.
 pub struct PowerSet<T>;
 
-pub trait Construct {
-    fn new() -> Self;
-}
 impl<T> Construct for Dimension<T> {
     fn new() -> Dimension<T> { Dimension }
 }
@@ -62,9 +71,6 @@ impl<T> Construct for PowerSet<T> {
     fn new() -> PowerSet<T> { PowerSet }
 }
 
-pub trait Count<T> {
-    fn count(&self, dim: T) -> usize;
-}
 impl Count<usize> for Dimension<Data> {
     fn count(&self, dim: usize) -> usize { dim }
 }
@@ -131,9 +137,6 @@ impl<T: Construct + Count<U>, U> Count<U> for PowerSet<Of<T>> {
     }
 }
 
-pub trait ToIndex<T, U> {
-    fn to_index(&self, dim: T, pos: U) -> usize;
-}
 impl ToIndex<usize, usize> for Dimension<Data> {
     fn to_index(&self, _dim: usize, pos: usize) -> usize { pos }
 }
@@ -244,9 +247,6 @@ ToIndex<U, &'a[V]> for PowerSet<Of<T>> {
     }
 }
 
-pub trait ToPos<T, U> {
-    fn to_pos(&self, dim: T, index: usize, pos: U);
-}
 impl<'a> ToPos<usize, &'a mut usize> for Dimension<Data> {
     fn to_pos(&self, _dim: usize, index: usize, pos: &'a mut usize) {
         *pos = index;
