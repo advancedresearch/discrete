@@ -1,4 +1,5 @@
 #![allow(unstable)]
+#![deny(missing_docs)]
 
 //! Combinatorial phantom types for discrete mathematics.
 //!
@@ -399,11 +400,12 @@ ToPos<U, &'a mut Vec<&'a mut V>> for PowerSet<Of<T>> {
     }
 }
 
-pub type D2 = Dimension<Subspace<Dimension<Data>>>;
-pub type D3 = Dimension<Subspace<D2>>;
 
 #[test]
 fn test() {
+    type D2 = Dimension<Subspace<Dimension<Data>>>;
+    type D3 = Dimension<Subspace<D2>>;
+
     let x: D3 = Construct::new();
     let dim = (3, (3, 3));
     assert_eq!(x.count(dim), 27);
