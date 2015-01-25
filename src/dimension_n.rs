@@ -23,8 +23,11 @@ impl<'a> Count<&'a [usize]> for DimensionN<Data> {
     }
 }
 
-impl<'a, T: Construct + Count<U>, U>
-Count<(&'a [usize], U)> for DimensionN<Subspace<T>> {
+impl<'a, T, U>
+Count<(&'a [usize], U)> for DimensionN<Subspace<T>>
+    where
+        T: Construct + Count<U>
+{
     fn count(&self, (a, b): (&'a [usize], U)) -> usize {
         let subspace: T = Construct::new();
         let data: DimensionN<Data> = Construct::new();
@@ -32,8 +35,11 @@ Count<(&'a [usize], U)> for DimensionN<Subspace<T>> {
     }
 }
 
-impl<'a, T: Construct + Count<U>, U: Copy>
-Count<&'a [U]> for DimensionN<Of<T>> {
+impl<'a, T, U: Copy>
+Count<&'a [U]> for DimensionN<Of<T>>
+    where
+        T: Construct + Count<U>
+{
     fn count(&self, dim: &'a [U]) -> usize {
         let of: T = Construct::new();
         let mut prod = 1;
@@ -54,8 +60,11 @@ impl<'a> ToIndex<&'a [usize], &'a [usize]> for DimensionN<Data> {
     }
 }
 
-impl<'a, T: Construct + Count<U> + ToIndex<U, V>, U: Copy, V>
-ToIndex<(&'a [usize], U), (&'a [usize], V)> for DimensionN<Subspace<T>> {
+impl<'a, T, U: Copy, V>
+ToIndex<(&'a [usize], U), (&'a [usize], V)> for DimensionN<Subspace<T>>
+    where
+        T: Construct + Count<U> + ToIndex<U, V>
+{
     fn to_index(
         &self,
         (a, b): (&'a [usize], U),
@@ -68,8 +77,11 @@ ToIndex<(&'a [usize], U), (&'a [usize], V)> for DimensionN<Subspace<T>> {
     }
 }
 
-impl<'a, T: Construct + Count<U> + ToIndex<U, V>, U: Copy, V: Copy>
-ToIndex<&'a [U], &'a [V]> for DimensionN<Of<T>> {
+impl<'a, T, U: Copy, V: Copy>
+ToIndex<&'a [U], &'a [V]> for DimensionN<Of<T>>
+    where
+        T: Construct + Count<U> + ToIndex<U, V>
+{
     fn to_index(
         &self,
         dim: &'a [U],
@@ -98,8 +110,12 @@ impl<'a> ToPos<&'a [usize], &'a mut [usize]> for DimensionN<Data> {
     }
 }
 
-impl<'a, T: Construct + Count<U> + ToPos<U, &'a mut V>, U: Copy, V>
-ToPos<(&'a [usize], U), &'a mut (&'a mut [usize], V)> for DimensionN<Subspace<T>> {
+impl<'a, T, U: Copy, V>
+ToPos<(&'a [usize], U), &'a mut (&'a mut [usize], V)>
+for DimensionN<Subspace<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, &'a mut V>
+{
     fn to_pos(
         &self,
         (a, b): (&'a [usize], U),
@@ -115,8 +131,12 @@ ToPos<(&'a [usize], U), &'a mut (&'a mut [usize], V)> for DimensionN<Subspace<T>
     }
 }
 
-impl<'a, T: Construct + Count<U> + ToPos<U, &'a mut V>, U: Copy, V>
-ToPos<&'a [U], &'a mut [&'a mut V]> for DimensionN<Of<T>> {
+impl<'a, T, U: Copy, V>
+ToPos<&'a [U], &'a mut [&'a mut V]>
+for DimensionN<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, &'a mut V>
+{
     fn to_pos(
         &self,
         dim: &'a [U],

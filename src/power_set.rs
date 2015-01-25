@@ -18,7 +18,10 @@ impl Count<usize> for PowerSet<Data> {
     }
 }
 
-impl<T: Construct + Count<U>, U> Count<U> for PowerSet<Of<T>> {
+impl<T, U> Count<U> for PowerSet<Of<T>>
+    where
+        T: Construct + Count<U>
+{
     fn count(&self, dim: U) -> usize {
         let of: T = Construct::new();
         1 << of.count(dim)
@@ -39,8 +42,11 @@ impl<'a> ToIndex<usize, &'a [usize]> for PowerSet<Data> {
     }
 }
 
-impl<'a, T: Construct + ToIndex<U, V>, U: Copy, V: Copy>
-ToIndex<U, &'a[V]> for PowerSet<Of<T>> {
+impl<'a, T, U: Copy, V: Copy>
+ToIndex<U, &'a[V]> for PowerSet<Of<T>>
+    where
+        T: Construct + ToIndex<U, V>
+{
     fn to_index(
         &self,
         dim: U,
@@ -71,13 +77,13 @@ impl<'a> ToPos<usize, &'a mut Vec<usize>> for PowerSet<Data> {
     }
 }
 
-impl<
-    'a,
-    T: Construct + Count<U> + ToPos<U, &'a mut V>,
-    U: Copy,
-    V
->
-ToPos<U, &'a mut Vec<&'a mut V>> for PowerSet<Of<T>> {
+impl<'a, T, U, V>
+ToPos<U, &'a mut Vec<&'a mut V>>
+for PowerSet<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, &'a mut V>,
+        U: Copy
+{
     fn to_pos(
         &self,
         dim: U,

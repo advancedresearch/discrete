@@ -19,7 +19,10 @@ impl Count<usize> for Pair<Data> {
     fn count(&self, dim: usize) -> usize { dim * (dim - 1) / 2 }
 }
 
-impl<T: Construct + Count<U>, U> Count<(usize, U)> for Pair<Subspace<T>> {
+impl<T, U> Count<(usize, U)> for Pair<Subspace<T>>
+    where
+        T: Construct + Count<U>
+{
     fn count(&self, (a, b): (usize, U)) -> usize {
         let subspace: T = Construct::new();
         let data: Pair<Data> = Construct::new();
@@ -27,7 +30,10 @@ impl<T: Construct + Count<U>, U> Count<(usize, U)> for Pair<Subspace<T>> {
     }
 }
 
-impl<T: Construct + Count<U>, U> Count<U> for Pair<Of<T>> {
+impl<T, U> Count<U> for Pair<Of<T>>
+    where
+        T: Construct + Count<U>
+{
     fn count(&self, dim: U) -> usize {
         let of: T = Construct::new();
         let data: Pair<Data> = Construct::new();
@@ -35,14 +41,20 @@ impl<T: Construct + Count<U>, U> Count<U> for Pair<Of<T>> {
     }
 }
 
-impl ToIndex<usize, (usize, usize)> for Pair<Data> {
+impl ToIndex<usize, (usize, usize)>
+for Pair<Data> {
     fn to_index(&self, _dim: usize, (min, max): (usize, usize)) -> usize {
         min + max * (max - 1) / 2
     }
 }
 
-impl<T: Construct + Count<U> + ToIndex<U, V>, U: Copy, V>
-ToIndex<(usize, U), ((usize, usize), V)> for Pair<Subspace<T>> {
+impl<T, U, V>
+ToIndex<(usize, U), ((usize, usize), V)>
+for Pair<Subspace<T>>
+    where
+        T: Construct + Count<U> + ToIndex<U, V>,
+        U: Copy
+{
     fn to_index(
         &self,
         (a, b): (usize, U),
@@ -55,8 +67,12 @@ ToIndex<(usize, U), ((usize, usize), V)> for Pair<Subspace<T>> {
     }
 }
 
-impl<T: Construct + ToIndex<U, V> + Count<U>, U: Copy, V>
-ToIndex<U, (V, V)> for Pair<Of<T>> {
+impl<T, U, V>
+ToIndex<U, (V, V)> for Pair<Of<T>>
+    where
+        T: Construct + ToIndex<U, V> + Count<U>,
+        U: Copy
+{
     fn to_index(
         &self,
         dim: U,
@@ -78,8 +94,12 @@ impl<'a> ToPos<usize, &'a mut (usize, usize)> for Pair<Data> {
     }
 }
 
-impl<'a, T: Construct + Count<U> + ToPos<U, &'a mut V>, U: Copy, V>
-ToPos<(usize, U), &'a mut ((usize, usize), V)> for Pair<Subspace<T>> {
+impl<'a, T, U, V>
+ToPos<(usize, U), &'a mut ((usize, usize), V)> for Pair<Subspace<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, &'a mut V>,
+        U: Copy
+{
     fn to_pos(
         &self,
         (a, b): (usize, U),
@@ -95,8 +115,12 @@ ToPos<(usize, U), &'a mut ((usize, usize), V)> for Pair<Subspace<T>> {
     }
 }
 
-impl<'a, T: Construct + Count<U> + ToPos<U, V>, U: Copy, V>
-ToPos<U, (V, V)> for Pair<Of<T>> {
+impl<'a, T, U, V>
+ToPos<U, (V, V)> for Pair<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, V>,
+        U: Copy
+{
     fn to_pos(
         &self,
         dim: U,
