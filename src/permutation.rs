@@ -32,8 +32,7 @@ impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
         let mut count = self.count(dim);
         for (i, &x) in pos.iter().enumerate() {
             count /= dim - i;
-            let lower = pos[..i].iter().fold(0, |a, &y|
-                if y < x { a + 1 } else { a });
+            let lower = pos[..i].iter().filter(|&&y| y < x).count();
             index += count * (x - lower);
         }
         index
