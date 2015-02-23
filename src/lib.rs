@@ -40,6 +40,7 @@ pub use dimension_n::DimensionN;
 pub use dimension::Dimension;
 pub use pair::Pair;
 pub use eq_pair::EqPair;
+pub use permutation::Permutation;
 
 mod construct;
 mod count;
@@ -50,6 +51,7 @@ mod dimension_n;
 mod dimension;
 mod pair;
 mod eq_pair;
+mod permutation;
 
 /// Used by the final subspace.
 #[derive(Copy)]
