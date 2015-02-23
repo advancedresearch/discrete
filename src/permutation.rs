@@ -26,13 +26,19 @@ impl Count<usize> for Permutation<Data> {
     }
 }
 
-/*
 impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
     fn to_index(&self, dim: usize, pos: &'a [usize]) -> usize {
-
+        let mut index = 0;
+        let mut count = self.count(dim);
+        for (i, &x) in pos.iter().enumerate() {
+            count /= dim - i;
+            let lower = pos[..i].iter().fold(0, |a, &y|
+                if y < x { a + 1 } else { a });
+            index += count * (x - lower);
+        }
+        index
     }
 }
-*/
 
 impl<'a> ToPos<usize, &'a mut Vec<usize>> for Permutation<Data> {
     fn to_pos(&self, dim: usize, mut index: usize, pos: &'a mut Vec<usize>) {
@@ -62,6 +68,7 @@ mod test {
     use Data;
     use Count;
     use ToPos;
+    use ToIndex;
 
     #[test]
     fn test() {
@@ -73,19 +80,11 @@ mod test {
 
         let mut pos = Vec::new();
         let dim = 4;
-        permutation.to_pos(dim, 0, &mut pos);
-        assert_eq!(&pos, &[0, 1, 2, 3]);
-        permutation.to_pos(dim, 1, &mut pos);
-        assert_eq!(&pos, &[0, 1, 3, 2]);
-        permutation.to_pos(dim, 2, &mut pos);
-        assert_eq!(&pos, &[0, 2, 1, 3]);
-        permutation.to_pos(dim, 3, &mut pos);
-        assert_eq!(&pos, &[0, 2, 3, 1]);
-        permutation.to_pos(dim, 4, &mut pos);
-        assert_eq!(&pos, &[0, 3, 1, 2]);
-        permutation.to_pos(dim, 5, &mut pos);
-        assert_eq!(&pos, &[0, 3, 2, 1]);
-        permutation.to_pos(dim, 6, &mut pos);
-        assert_eq!(&pos, &[1, 0, 2, 3]);
+        let count = permutation.count(dim);
+        for i in 0..count {
+            permutation.to_pos(dim, i, &mut pos);
+            let index = permutation.to_index(dim, &pos);
+            assert_eq!(index, i);
+        }
     }
 }
