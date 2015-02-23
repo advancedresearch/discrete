@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use Construct;
 use Data;
 use Count;
@@ -7,10 +9,10 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is a list of numbers, position is a list of numbers.
-pub struct DimensionN<T>;
+pub struct DimensionN<T>(PhantomData<T>);
 
 impl<T> Construct for DimensionN<T> {
-    fn new() -> DimensionN<T> { DimensionN }
+    fn new() -> DimensionN<T> { DimensionN(PhantomData) }
 }
 
 impl<'a> Count<&'a [usize]> for DimensionN<Data> {

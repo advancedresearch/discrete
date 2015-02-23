@@ -1,4 +1,5 @@
 use std::num::Float;
+use std::marker::PhantomData;
 
 use Construct;
 use Data;
@@ -9,10 +10,10 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is natural number, position is (min, max).
-pub struct Pair<T>;
+pub struct Pair<T>(PhantomData<T>);
 
 impl<T> Construct for Pair<T> {
-    fn new() -> Pair<T> { Pair }
+    fn new() -> Pair<T> { Pair(PhantomData) }
 }
 
 impl Count<usize> for Pair<Data> {

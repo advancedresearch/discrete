@@ -1,4 +1,3 @@
-#![allow(unstable)]
 #![deny(missing_docs)]
 
 //! Combinatorial phantom types for discrete mathematics.
@@ -30,6 +29,8 @@
 //! The dimension and position types are compositions,
 //! given by the type of the constructed space.
 
+use std::marker::PhantomData;
+
 pub use construct::Construct;
 pub use count::Count;
 pub use to_index::ToIndex;
@@ -52,9 +53,9 @@ mod pair;
 #[derive(Copy)]
 pub struct Data;
 /// Used to nest a subspace.
-pub struct Subspace<T>;
+pub struct Subspace<T>(PhantomData<T>);
 /// Used to combine the dimensional and position types.
-pub struct Of<T>;
+pub struct Of<T>(PhantomData<T>);
 
 #[test]
 fn test() {
@@ -99,63 +100,63 @@ fn test() {
     assert_eq!(x.to_index(dim, &[1, 0]), 1);
     assert_eq!(x.to_index(dim, &[0, 1]), 3);
     let mut new_pos = [0, 0];
-    x.to_pos(dim, 3, &mut new_pos[]);
-    assert_eq!(&new_pos[], &[0, 1][]);
+    x.to_pos(dim, 3, &mut new_pos);
+    assert_eq!(&new_pos, &[0, 1]);
 
     let x: Pair<Of<DimensionN<Data>>> = Construct::new();
     let dim = [2, 2];
-    assert_eq!(x.count(&dim[]), 6);
-    assert_eq!(x.to_index(&dim[], (&[0, 0], &[1, 0])), 0);
-    assert_eq!(x.to_index(&dim[], (&[0, 0], &[0, 1])), 1);
-    assert_eq!(x.to_index(&dim[], (&[1, 0], &[0, 1])), 2);
-    assert_eq!(x.to_index(&dim[], (&[0, 0], &[1, 1])), 3);
-    assert_eq!(x.to_index(&dim[], (&[1, 0], &[1, 1])), 4);
-    assert_eq!(x.to_index(&dim[], (&[0, 1], &[1, 1])), 5);
+    assert_eq!(x.count(&dim), 6);
+    assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 0])), 0);
+    assert_eq!(x.to_index(&dim, (&[0, 0], &[0, 1])), 1);
+    assert_eq!(x.to_index(&dim, (&[1, 0], &[0, 1])), 2);
+    assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 1])), 3);
+    assert_eq!(x.to_index(&dim, (&[1, 0], &[1, 1])), 4);
+    assert_eq!(x.to_index(&dim, (&[0, 1], &[1, 1])), 5);
     let mut min = [0, 0];
     let mut max = [0, 0];
-    for i in range(0, 6) {
-        x.to_pos(&dim[], i, (&mut min, &mut max));
+    for i in 0..6 {
+        x.to_pos(&dim, i, (&mut min, &mut max));
         // println!("{} {}", &min[], &max[]);
     }
-    x.to_pos(&dim[], 5, (&mut min, &mut max));
-    assert_eq!(&min[], &[0, 1][]);
-    assert_eq!(&max[], &[1, 1][]);
+    x.to_pos(&dim, 5, (&mut min, &mut max));
+    assert_eq!(&min, &[0, 1]);
+    assert_eq!(&max, &[1, 1]);
 
     let x: DimensionN<Of<Pair<Data>>> = Construct::new();
     let dim = [3, 4];
-    assert_eq!(x.count(&dim[]), 18);
-    assert_eq!(x.to_index(&dim[], &[(0, 1), (0, 1)]), 0);
-    assert_eq!(x.to_index(&dim[], &[(0, 2), (0, 1)]), 1);
-    assert_eq!(x.to_index(&dim[], &[(1, 2), (0, 1)]), 2);
-    assert_eq!(x.to_index(&dim[], &[(0, 1), (0, 2)]), 3);
+    assert_eq!(x.count(&dim), 18);
+    assert_eq!(x.to_index(&dim, &[(0, 1), (0, 1)]), 0);
+    assert_eq!(x.to_index(&dim, &[(0, 2), (0, 1)]), 1);
+    assert_eq!(x.to_index(&dim, &[(1, 2), (0, 1)]), 2);
+    assert_eq!(x.to_index(&dim, &[(0, 1), (0, 2)]), 3);
     let ref mut a = (0, 0);
     let ref mut b = (0, 0);
-    x.to_pos(&dim[], 3, &mut [a, b]);
+    x.to_pos(&dim, 3, &mut [a, b]);
     assert_eq!(*a, (0, 1));
     assert_eq!(*b, (0, 2));
 
     let x: PowerSet<Data> = Construct::new();
     let dim = 6;
     assert_eq!(x.count(dim), 64);
-    assert_eq!(x.to_index(dim, &[][]), 0);
-    assert_eq!(x.to_index(dim, &[0][]), 1);
-    assert_eq!(x.to_index(dim, &[1][]), 2);
-    assert_eq!(x.to_index(dim, &[0, 1][]), 3);
+    assert_eq!(x.to_index(dim, &[]), 0);
+    assert_eq!(x.to_index(dim, &[0]), 1);
+    assert_eq!(x.to_index(dim, &[1]), 2);
+    assert_eq!(x.to_index(dim, &[0, 1]), 3);
     let mut a = vec![];
     x.to_pos(dim, 9, &mut a);
-    assert_eq!(&a[], &[0, 3][]);
+    assert_eq!(&a, &[0, 3]);
 
     let x: PowerSet<Of<Pair<Data>>> = Construct::new();
     let dim = 4;
     assert_eq!(x.count(dim), 64);
-    assert_eq!(x.to_index(dim, &[][]), 0);
-    assert_eq!(x.to_index(dim, &[(0, 1)][]), 1);
-    assert_eq!(x.to_index(dim, &[(0, 2)][]), 2);
-    assert_eq!(x.to_index(dim, &[(0, 1), (0, 2)][]), 3);
-    assert_eq!(x.to_index(dim, &[(1, 2)][]), 4);
-    assert_eq!(x.to_index(dim, &[(0, 1), (1, 2)][]), 5);
-    assert_eq!(x.to_index(dim, &[(0, 2), (1, 2)][]), 6);
-    assert_eq!(x.to_index(dim, &[(0, 1), (0, 2), (1, 2)][]), 7);
+    assert_eq!(x.to_index(dim, &[]), 0);
+    assert_eq!(x.to_index(dim, &[(0, 1)]), 1);
+    assert_eq!(x.to_index(dim, &[(0, 2)]), 2);
+    assert_eq!(x.to_index(dim, &[(0, 1), (0, 2)]), 3);
+    assert_eq!(x.to_index(dim, &[(1, 2)]), 4);
+    assert_eq!(x.to_index(dim, &[(0, 1), (1, 2)]), 5);
+    assert_eq!(x.to_index(dim, &[(0, 2), (1, 2)]), 6);
+    assert_eq!(x.to_index(dim, &[(0, 1), (0, 2), (1, 2)]), 7);
     let mut a = [(0, 0); 64];
     {
         let mut b = a.iter_mut().collect();

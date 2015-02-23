@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+
 use Construct;
 use Of;
 use ToPos;
@@ -6,10 +8,10 @@ use Data;
 use ToIndex;
 
 /// Dimension is natural number, position is a list of numbers.
-pub struct PowerSet<T>;
+pub struct PowerSet<T>(PhantomData<T>);
 
 impl<T> Construct for PowerSet<T> {
-    fn new() -> PowerSet<T> { PowerSet }
+    fn new() -> PowerSet<T> { PowerSet(PhantomData) }
 }
 
 impl Count<usize> for PowerSet<Data> {
