@@ -39,6 +39,7 @@ pub use power_set::PowerSet;
 pub use dimension_n::DimensionN;
 pub use dimension::Dimension;
 pub use pair::Pair;
+pub use eq_pair::EqPair;
 
 mod construct;
 mod count;
@@ -48,6 +49,7 @@ mod power_set;
 mod dimension_n;
 mod dimension;
 mod pair;
+mod eq_pair;
 
 /// Used by the final subspace.
 #[derive(Copy)]
