@@ -29,11 +29,11 @@ impl Count<usize> for Permutation<Data> {
 impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
     fn to_index(&self, dim: usize, pos: &'a [usize]) -> usize {
         let mut index = 0;
-        let mut count = self.count(dim);
-        for (i, &x) in pos.iter().enumerate() {
-            count /= dim - i;
+        let mut count = 1;
+        for (i, &x) in pos.iter().enumerate().rev() {
             let lower = pos[..i].iter().filter(|&&y| y < x).count();
             index += count * (x - lower);
+            count *= dim - i;
         }
         index
     }
