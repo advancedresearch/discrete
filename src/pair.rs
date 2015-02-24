@@ -138,3 +138,35 @@ ToPos<U, (V, V)> for Pair<Of<T>>
         of.to_pos(dim, pair_max, max);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+
+    #[test]
+    fn data() {
+        let x: Pair<Data> = Construct::new();
+        let dim = 4;
+        assert_eq!(x.count(dim), 6);
+        assert_eq!(x.to_index(dim, (0, 1)), 0);
+        assert_eq!(x.to_index(dim, (0, 2)), 1);
+        assert_eq!(x.to_index(dim, (1, 2)), 2);
+        assert_eq!(x.to_index(dim, (0, 3)), 3);
+        let mut new_pos = (0, 0);
+        x.to_pos(dim, 3, &mut new_pos);
+        assert_eq!(new_pos, (0, 3));
+    }
+
+    #[test]
+    fn subspace() {
+        let x: Pair<Subspace<Dimension<Data>>> = Construct::new();
+        let dim = (4, 3);
+        assert_eq!(x.count(dim), 18);
+        assert_eq!(x.to_index(dim, ((0, 1), 0)), 0);
+        assert_eq!(x.to_index(dim, ((0, 1), 1)), 1);
+        assert_eq!(x.to_index(dim, ((0, 2), 0)), 3);
+        let mut new_pos = ((0, 0), 0);
+        x.to_pos(dim, 3, &mut new_pos);
+        assert_eq!(new_pos, ((0, 2), 0));
+    }
+}
