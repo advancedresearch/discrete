@@ -63,19 +63,6 @@ pub struct Of<T>(PhantomData<T>);
 
 #[test]
 fn test() {
-    type D2 = Dimension<Subspace<Dimension<Data>>>;
-    type D3 = Dimension<Subspace<D2>>;
-
-    let x: D3 = Construct::new();
-    let dim = (3, (3, 3));
-    assert_eq!(x.count(dim), 27);
-    let pos = (1, (0, 2));
-    let index = x.to_index(dim, pos);
-    assert_eq!(index, 11);
-    let mut new_pos = pos;
-    x.to_pos(dim, index, &mut new_pos);
-    assert_eq!(pos, new_pos);
-
     let x: Pair<Data> = Construct::new();
     let dim = 4;
     assert_eq!(x.count(dim), 6);
