@@ -70,13 +70,7 @@ ToPos<(usize, U), &'a mut (usize, V)> for Dimension<Subspace<T>>
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use Data;
-    use Subspace;
-    use Construct;
-    use ToIndex;
-    use ToPos;
-    use Count;
+    use super::super::*;
 
     #[test]
     fn test_dimension() {
