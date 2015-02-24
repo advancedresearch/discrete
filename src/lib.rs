@@ -60,3 +60,9 @@ pub struct Data;
 pub struct Subspace<T>(PhantomData<T>);
 /// Used to combine the dimensional and position types.
 pub struct Of<T>(PhantomData<T>);
+
+#[cfg(test)]
+pub fn does_count<T, U>()
+    where
+        T: Count<U>
+{}

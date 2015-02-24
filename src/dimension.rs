@@ -73,7 +73,13 @@ mod tests {
     use super::super::*;
 
     #[test]
-    fn test_dimension() {
+    fn features() {
+        does_count::<Dimension<Data>, usize>();
+        does_count::<Dimension<Subspace<Pair<Data>>>, (usize, usize)>();
+    }
+
+    #[test]
+    fn subspace() {
         type D2 = Dimension<Subspace<Dimension<Data>>>;
         type D3 = Dimension<Subspace<D2>>;
 
