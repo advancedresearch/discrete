@@ -169,4 +169,26 @@ mod tests {
         x.to_pos(dim, 3, &mut new_pos);
         assert_eq!(new_pos, ((0, 2), 0));
     }
+
+    #[test]
+    fn of() {
+        let x: Pair<Of<DimensionN<Data>>> = Construct::new();
+        let dim = [2, 2];
+        assert_eq!(x.count(&dim), 6);
+        assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 0])), 0);
+        assert_eq!(x.to_index(&dim, (&[0, 0], &[0, 1])), 1);
+        assert_eq!(x.to_index(&dim, (&[1, 0], &[0, 1])), 2);
+        assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 1])), 3);
+        assert_eq!(x.to_index(&dim, (&[1, 0], &[1, 1])), 4);
+        assert_eq!(x.to_index(&dim, (&[0, 1], &[1, 1])), 5);
+        let mut min = [0, 0];
+        let mut max = [0, 0];
+        for i in 0..6 {
+            x.to_pos(&dim, i, (&mut min, &mut max));
+            // println!("{} {}", &min[], &max[]);
+        }
+        x.to_pos(&dim, 5, (&mut min, &mut max));
+        assert_eq!(&min, &[0, 1]);
+        assert_eq!(&max, &[1, 1]);
+    }
 }

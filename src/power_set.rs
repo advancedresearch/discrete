@@ -107,3 +107,43 @@ for PowerSet<Of<T>>
         // unsafe { pos.set_len(i); }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+
+    #[test]
+    fn data() {
+        let x: PowerSet<Data> = Construct::new();
+        let dim = 6;
+        assert_eq!(x.count(dim), 64);
+        assert_eq!(x.to_index(dim, &[]), 0);
+        assert_eq!(x.to_index(dim, &[0]), 1);
+        assert_eq!(x.to_index(dim, &[1]), 2);
+        assert_eq!(x.to_index(dim, &[0, 1]), 3);
+        let mut a = vec![];
+        x.to_pos(dim, 9, &mut a);
+        assert_eq!(&a, &[0, 3]);
+    }
+
+    #[test]
+    fn of() {
+        let x: PowerSet<Of<Pair<Data>>> = Construct::new();
+        let dim = 4;
+        assert_eq!(x.count(dim), 64);
+        assert_eq!(x.to_index(dim, &[]), 0);
+        assert_eq!(x.to_index(dim, &[(0, 1)]), 1);
+        assert_eq!(x.to_index(dim, &[(0, 2)]), 2);
+        assert_eq!(x.to_index(dim, &[(0, 1), (0, 2)]), 3);
+        assert_eq!(x.to_index(dim, &[(1, 2)]), 4);
+        assert_eq!(x.to_index(dim, &[(0, 1), (1, 2)]), 5);
+        assert_eq!(x.to_index(dim, &[(0, 2), (1, 2)]), 6);
+        assert_eq!(x.to_index(dim, &[(0, 1), (0, 2), (1, 2)]), 7);
+        let mut a = [(0, 0); 64];
+        {
+            let mut b = a.iter_mut().collect();
+            x.to_pos(dim, 7, &mut b);
+        }
+        assert_eq!(a[0], (0, 1));
+    }
+}

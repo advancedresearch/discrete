@@ -156,3 +156,37 @@ for DimensionN<Of<T>>
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+
+    #[test]
+    fn data() {
+        let x: DimensionN<Data> = Construct::new();
+        let dim = &[3, 3];
+        assert_eq!(x.count(dim), 9);
+        assert_eq!(x.to_index(dim, &[0, 0]), 0);
+        assert_eq!(x.to_index(dim, &[1, 0]), 1);
+        assert_eq!(x.to_index(dim, &[0, 1]), 3);
+        let mut new_pos = [0, 0];
+        x.to_pos(dim, 3, &mut new_pos);
+        assert_eq!(&new_pos, &[0, 1]);
+    }
+
+    #[test]
+    fn of() {
+        let x: DimensionN<Of<Pair<Data>>> = Construct::new();
+        let dim = [3, 4];
+        assert_eq!(x.count(&dim), 18);
+        assert_eq!(x.to_index(&dim, &[(0, 1), (0, 1)]), 0);
+        assert_eq!(x.to_index(&dim, &[(0, 2), (0, 1)]), 1);
+        assert_eq!(x.to_index(&dim, &[(1, 2), (0, 1)]), 2);
+        assert_eq!(x.to_index(&dim, &[(0, 1), (0, 2)]), 3);
+        let ref mut a = (0, 0);
+        let ref mut b = (0, 0);
+        x.to_pos(&dim, 3, &mut [a, b]);
+        assert_eq!(*a, (0, 1));
+        assert_eq!(*b, (0, 2));
+    }
+}
