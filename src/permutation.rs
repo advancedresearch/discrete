@@ -1,5 +1,6 @@
 
 use std::marker::PhantomData;
+use std::default::Default;
 
 use Construct;
 use Count;
@@ -76,8 +77,8 @@ impl<'a, T, U: Copy, V: Copy> ToIndex<U, &'a [V]> for Permutation<Of<T>>
     }
 }
 
-impl<'a> ToPos<usize, &'a mut Vec<usize>> for Permutation<Data> {
-    fn to_pos(&self, dim: usize, mut index: usize, pos: &'a mut Vec<usize>) {
+impl ToPos<usize, Vec<usize>> for Permutation<Data> {
+    fn to_pos(&self, dim: usize, mut index: usize, pos: &mut Vec<usize>) {
         unsafe { pos.set_len(0); }
 
         let mut count = 1;
@@ -92,6 +93,36 @@ impl<'a> ToPos<usize, &'a mut Vec<usize>> for Permutation<Data> {
             let item = pos.remove(ind);
             pos.push(item);
             count /= dim - i;
+            index -= ind * block;
+        }
+    }
+}
+
+impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, V>,
+        U: Copy,
+        V: Default
+{
+    fn to_pos(&self, dim: U, mut index: usize, pos: &mut Vec<V>) {
+        let of: T = Construct::new();
+        let of_count = of.count(dim);
+        pos.clear();
+
+        let mut count = 1;
+        for (j, x) in (1..of_count + 1).enumerate() {
+            count *= x;
+            let mut new_pos: V = Default::default();
+            of.to_pos(dim, j, &mut new_pos);
+            pos.push(new_pos);
+        }
+
+        for i in 0..of_count {
+            let block = count / (of_count - i);
+            let ind = index / block;
+            let item = pos.remove(ind);
+            pos.push(item);
+            count /= of_count - i;
             index -= ind * block;
         }
     }
@@ -124,11 +155,11 @@ mod test {
         let space: Permutation<Of<Pair<Data>>> = Construct::new();
         let dim = 3;
         let count = space.count(dim);
-        println!("{:?}", count);
-        println!("{:?}", space.to_index(dim, &[(0, 1), (0, 2), (1, 2)]));
-        println!("{:?}", space.to_index(dim, &[(0, 1), (1, 2), (0, 2)]));
-        println!("{:?}", space.to_index(dim, &[(0, 2), (0, 1), (1, 2)]));
-        println!("{:?}", space.to_index(dim, &[(0, 2), (1, 2), (0, 1)]));
-        assert!(false);
+        let mut pos = Vec::new();
+        for i in 0..count {
+            space.to_pos(dim, i, &mut pos);
+            let index = space.to_index(dim, &pos);
+            assert_eq!(index, i);
+        }
     }
 }

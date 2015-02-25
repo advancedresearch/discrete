@@ -59,7 +59,7 @@ fn main() {
     let mut pos: ((usize, usize), (usize, usize)) = ((0, 0), (0, 0));
     let mut res_count = 0;
     for x in 0..count {
-        pair_of_pairs.to_pos(n, x, (&mut pos.0, &mut pos.1));
+        pair_of_pairs.to_pos(n, x, &mut pos);
         if (pos.0).0 == (pos.1).0
         || (pos.0).0 == (pos.1).1
         || (pos.0).1 == (pos.1).0 {

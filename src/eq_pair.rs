@@ -87,25 +87,25 @@ ToIndex<U, (V, V)> for EqPair<Of<T>>
     }
 }
 
-impl<'a> ToPos<usize, &'a mut (usize, usize)> for EqPair<Data> {
-    fn to_pos(&self, _dim: usize, index: usize, pos: &'a mut (usize, usize)) {
+impl ToPos<usize, (usize, usize)> for EqPair<Data> {
+    fn to_pos(&self, _dim: usize, index: usize, pos: &mut (usize, usize)) {
         let max = ((-1f64 + (8f64 * index as f64 + 1f64).sqrt()) / 2f64) as usize;
         let min = index - max * (max + 1) / 2;
         *pos = (min, max)
     }
 }
 
-impl<'a, T, U, V>
-ToPos<(usize, U), &'a mut ((usize, usize), V)> for EqPair<Subspace<T>>
+impl<T, U, V>
+ToPos<(usize, U), ((usize, usize), V)> for EqPair<Subspace<T>>
     where
-        T: Construct + Count<U> + ToPos<U, &'a mut V>,
+        T: Construct + Count<U> + ToPos<U, V>,
         U: Copy
 {
     fn to_pos(
         &self,
         (a, b): (usize, U),
         index: usize,
-        &mut (ref mut head, ref mut tail): &'a mut ((usize, usize), V)
+        &mut (ref mut head, ref mut tail): &mut ((usize, usize), V)
     ) {
         let subspace: T = Construct::new();
         let count = subspace.count(b);
@@ -116,7 +116,7 @@ ToPos<(usize, U), &'a mut ((usize, usize), V)> for EqPair<Subspace<T>>
     }
 }
 
-impl<'a, T, U, V>
+impl<T, U, V>
 ToPos<U, (V, V)> for EqPair<Of<T>>
     where
         T: Construct + Count<U> + ToPos<U, V>,
@@ -126,7 +126,7 @@ ToPos<U, (V, V)> for EqPair<Of<T>>
         &self,
         dim: U,
         index: usize,
-        (min, max): (V, V)
+        &mut (ref mut min, ref mut max): &mut (V, V)
     ) {
         let of: T = Construct::new();
         let data: EqPair<Data> = Construct::new();

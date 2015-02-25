@@ -43,22 +43,22 @@ impl<T, U: Copy, V> ToIndex<(usize, U), (usize, V)> for Dimension<Subspace<T>>
     }
 }
 
-impl<'a> ToPos<usize, &'a mut usize> for Dimension<Data> {
-    fn to_pos(&self, _dim: usize, index: usize, pos: &'a mut usize) {
+impl ToPos<usize, usize> for Dimension<Data> {
+    fn to_pos(&self, _dim: usize, index: usize, pos: &mut usize) {
         *pos = index;
     }
 }
 
-impl<'a, T, U: Copy, V>
-ToPos<(usize, U), &'a mut (usize, V)> for Dimension<Subspace<T>>
+impl<T, U: Copy, V>
+ToPos<(usize, U), (usize, V)> for Dimension<Subspace<T>>
     where
-        T: Construct + Count<U> + ToPos<U, &'a mut V>
+        T: Construct + Count<U> + ToPos<U, V>
 {
     fn to_pos(
         &self,
         (_a, b): (usize, U),
         index: usize,
-        &mut (ref mut head, ref mut tail): &'a mut (usize, V)
+        &mut (ref mut head, ref mut tail): &mut (usize, V)
     ) {
         let subspace: T = Construct::new();
         let count = subspace.count(b);

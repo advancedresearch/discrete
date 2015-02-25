@@ -60,7 +60,7 @@ fn main() {
     let mut pos: (Vec<usize>, Vec<usize>) = (Vec::new(), Vec::new());
     let mut res_count = 0;
     for x in 0..count {
-        pair_of_powersets.to_pos(n, x, (&mut pos.0, &mut pos.1));
+        pair_of_powersets.to_pos(n, x, &mut pos);
         // Ignore worlds where Alice doesn't catch 4 species.
         if (pos.0).len() != 4 { continue; }
         let mut subset = true;

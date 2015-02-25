@@ -87,25 +87,25 @@ ToIndex<U, (V, V)> for Pair<Of<T>>
     }
 }
 
-impl<'a> ToPos<usize, &'a mut (usize, usize)> for Pair<Data> {
-    fn to_pos(&self, _dim: usize, index: usize, pos: &'a mut (usize, usize)) {
+impl ToPos<usize, (usize, usize)> for Pair<Data> {
+    fn to_pos(&self, _dim: usize, index: usize, pos: &mut (usize, usize)) {
         let max = ((-1f64 + (8f64 * index as f64 + 1f64).sqrt()) / 2f64) as usize + 1;
         let min = index - max * (max + 1) / 2 + max;
         *pos = (min, max)
     }
 }
 
-impl<'a, T, U, V>
-ToPos<(usize, U), &'a mut ((usize, usize), V)> for Pair<Subspace<T>>
+impl<T, U, V>
+ToPos<(usize, U), ((usize, usize), V)> for Pair<Subspace<T>>
     where
-        T: Construct + Count<U> + ToPos<U, &'a mut V>,
+        T: Construct + Count<U> + ToPos<U, V>,
         U: Copy
 {
     fn to_pos(
         &self,
         (a, b): (usize, U),
         index: usize,
-        &mut (ref mut head, ref mut tail): &'a mut ((usize, usize), V)
+        &mut (ref mut head, ref mut tail): &mut ((usize, usize), V)
     ) {
         let subspace: T = Construct::new();
         let count = subspace.count(b);
@@ -116,7 +116,7 @@ ToPos<(usize, U), &'a mut ((usize, usize), V)> for Pair<Subspace<T>>
     }
 }
 
-impl<'a, T, U, V>
+impl<T, U, V>
 ToPos<U, (V, V)> for Pair<Of<T>>
     where
         T: Construct + Count<U> + ToPos<U, V>,
@@ -126,7 +126,7 @@ ToPos<U, (V, V)> for Pair<Of<T>>
         &self,
         dim: U,
         index: usize,
-        (min, max): (V, V)
+        &mut (ref mut min, ref mut max): &mut (V, V)
     ) {
         let of: T = Construct::new();
         let data: Pair<Data> = Construct::new();
@@ -181,14 +181,13 @@ mod tests {
         assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 1])), 3);
         assert_eq!(x.to_index(&dim, (&[1, 0], &[1, 1])), 4);
         assert_eq!(x.to_index(&dim, (&[0, 1], &[1, 1])), 5);
-        let mut min = [0, 0];
-        let mut max = [0, 0];
+        let mut pos = (Vec::new(), Vec::new());
         for i in 0..6 {
-            x.to_pos(&dim, i, (&mut min, &mut max));
+            x.to_pos(&dim, i, &mut pos);
             // println!("{} {}", &min[], &max[]);
         }
-        x.to_pos(&dim, 5, (&mut min, &mut max));
-        assert_eq!(&min, &[0, 1]);
-        assert_eq!(&max, &[1, 1]);
+        x.to_pos(&dim, 5, &mut pos);
+        assert_eq!(&pos.0, &[0, 1]);
+        assert_eq!(&pos.1, &[1, 1]);
     }
 }

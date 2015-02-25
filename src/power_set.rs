@@ -63,12 +63,12 @@ ToIndex<U, &'a[V]> for PowerSet<Of<T>>
     }
 }
 
-impl<'a> ToPos<usize, &'a mut Vec<usize>> for PowerSet<Data> {
+impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
     fn to_pos(
         &self,
         dim: usize,
         index: usize,
-        pos: &'a mut Vec<usize>
+        pos: &mut Vec<usize>
     ) {
         unsafe { pos.set_len(0); }
         for i in 0..dim {
@@ -79,18 +79,18 @@ impl<'a> ToPos<usize, &'a mut Vec<usize>> for PowerSet<Data> {
     }
 }
 
-impl<'a, T, U, V>
-ToPos<U, &'a mut Vec<&'a mut V>>
+impl<T, U, V>
+ToPos<U, Vec<V>>
 for PowerSet<Of<T>>
     where
-        T: Construct + Count<U> + ToPos<U, &'a mut V>,
+        T: Construct + Count<U> + ToPos<U, V>,
         U: Copy
 {
     fn to_pos(
         &self,
         dim: U,
         index: usize,
-        pos: &'a mut Vec<&'a mut V>
+        pos: &mut Vec<V>
     ) {
         let of: T = Construct::new();
         let count = of.count(dim);
@@ -98,7 +98,7 @@ for PowerSet<Of<T>>
         for p in pos.iter_mut() {
             for j in i..count {
                 if ((index >> j) & 1) == 1 {
-                    of.to_pos(dim, j, *p);
+                    of.to_pos(dim, j, p);
                     i += 1;
                     break;
                 }
@@ -139,11 +139,8 @@ mod tests {
         assert_eq!(x.to_index(dim, &[(0, 1), (1, 2)]), 5);
         assert_eq!(x.to_index(dim, &[(0, 2), (1, 2)]), 6);
         assert_eq!(x.to_index(dim, &[(0, 1), (0, 2), (1, 2)]), 7);
-        let mut a = [(0, 0); 64];
-        {
-            let mut b = a.iter_mut().collect();
-            x.to_pos(dim, 7, &mut b);
-        }
+        let mut a = vec![(0, 0); 64];
+        x.to_pos(dim, 7, &mut a);
         assert_eq!(a[0], (0, 1));
     }
 }

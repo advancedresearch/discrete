@@ -99,9 +99,13 @@ ToIndex<&'a [U], &'a [V]> for DimensionN<Of<T>>
     }
 }
 
-impl<'a> ToPos<&'a [usize], &'a mut [usize]> for DimensionN<Data> {
-    fn to_pos(&self, dim: &'a [usize], index: usize, pos: &'a mut [usize]) {
+impl<'a> ToPos<&'a [usize], Vec<usize>> for DimensionN<Data> {
+    fn to_pos(&self, dim: &'a [usize], index: usize, pos: &mut Vec<usize>) {
+        unsafe { pos.set_len(0); }
         let mut prod = self.count(dim);
+        for _ in 0..dim.len() {
+            pos.push(0);
+        }
         let mut dim_index = index;
         for i in (0..dim.len()).rev() {
             prod /= dim[i];
@@ -113,37 +117,37 @@ impl<'a> ToPos<&'a [usize], &'a mut [usize]> for DimensionN<Data> {
 }
 
 impl<'a, T, U: Copy, V>
-ToPos<(&'a [usize], U), &'a mut (&'a mut [usize], V)>
+ToPos<(&'a [usize], U), (Vec<usize>, V)>
 for DimensionN<Subspace<T>>
     where
-        T: Construct + Count<U> + ToPos<U, &'a mut V>
+        T: Construct + Count<U> + ToPos<U, V>
 {
     fn to_pos(
         &self,
         (a, b): (&'a [usize], U),
         index: usize,
-        &mut (ref mut head, ref mut tail): &'a mut (&'a mut [usize], V)
+        &mut (ref mut head, ref mut tail): &mut (Vec<usize>, V)
     ) {
         let subspace: T = Construct::new();
         let count = subspace.count(b);
         let data: DimensionN<Data> = Construct::new();
         let x = index / count;
-        data.to_pos(a, index / count, *head);
+        data.to_pos(a, index / count, head);
         subspace.to_pos(b, index - x * count, tail)
     }
 }
 
 impl<'a, T, U: Copy, V>
-ToPos<&'a [U], &'a mut [&'a mut V]>
+ToPos<&'a [U], Vec<V>>
 for DimensionN<Of<T>>
     where
-        T: Construct + Count<U> + ToPos<U, &'a mut V>
+        T: Construct + Count<U> + ToPos<U, V>
 {
     fn to_pos(
         &self,
         dim: &'a [U],
         index: usize,
-        pos: &'a mut [&'a mut V]
+        pos: &mut Vec<V>
     ) {
         let of: T = Construct::new();
         let mut prod = self.count(dim);
@@ -151,7 +155,7 @@ for DimensionN<Of<T>>
         for (i, p) in pos.iter_mut().enumerate().rev() {
             prod /= of.count(dim[i]);
             let p_i = dim_index / prod;
-            of.to_pos(dim[i], p_i, *p);
+            of.to_pos(dim[i], p_i, p);
             dim_index -= p_i * prod;
         }
     }
@@ -169,7 +173,7 @@ mod tests {
         assert_eq!(x.to_index(dim, &[0, 0]), 0);
         assert_eq!(x.to_index(dim, &[1, 0]), 1);
         assert_eq!(x.to_index(dim, &[0, 1]), 3);
-        let mut new_pos = [0, 0];
+        let mut new_pos = vec![0, 0];
         x.to_pos(dim, 3, &mut new_pos);
         assert_eq!(&new_pos, &[0, 1]);
     }
@@ -183,10 +187,9 @@ mod tests {
         assert_eq!(x.to_index(&dim, &[(0, 2), (0, 1)]), 1);
         assert_eq!(x.to_index(&dim, &[(1, 2), (0, 1)]), 2);
         assert_eq!(x.to_index(&dim, &[(0, 1), (0, 2)]), 3);
-        let ref mut a = (0, 0);
-        let ref mut b = (0, 0);
-        x.to_pos(&dim, 3, &mut [a, b]);
-        assert_eq!(*a, (0, 1));
-        assert_eq!(*b, (0, 2));
+        let mut pos = vec![(0, 0), (0, 0)];
+        x.to_pos(&dim, 3, &mut pos);
+        assert_eq!(pos[0], (0, 1));
+        assert_eq!(pos[1], (0, 2));
     }
 }
