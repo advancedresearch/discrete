@@ -54,6 +54,16 @@ impl<T, U: Copy, V> ToIndex<(usize, U), (usize, V)> for Dimension<Subspace<T>>
     }
 }
 
+impl<T, U, V> ToIndex<U, V> for Dimension<Of<T>>
+    where
+        T: Construct + ToIndex<U, V>
+{
+    fn to_index(&self, dim: U, pos: V) -> usize {
+        let of: T = Construct::new();
+        of.to_index(dim, pos)
+    }
+}
+
 impl ToPos<usize, usize> for Dimension<Data> {
     fn to_pos(&self, _dim: usize, index: usize, pos: &mut usize) {
         *pos = index;
@@ -79,6 +89,16 @@ ToPos<(usize, U), (usize, V)> for Dimension<Subspace<T>>
     }
 }
 
+impl<T, U, V> ToPos<U, V> for Dimension<Of<T>>
+    where
+        T: Construct + ToPos<U, V>
+{
+    fn to_pos(&self, dim: U, index: usize, pos: &mut V) {
+        let of: T = Construct::new();
+        of.to_pos(dim, index, pos);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::*;
@@ -86,8 +106,16 @@ mod tests {
     #[test]
     fn features() {
         is_complete::<Dimension<Data>, usize, usize, usize>();
-        does_count::<Dimension<Subspace<Pair<Data>>>, (usize, usize)>();
-        does_count::<Dimension<Of<Pair<Data>>>, usize>();
+        is_complete::<Dimension<Subspace<Pair<Data>>>,
+            (usize, usize), // dimension
+            (usize, (usize, usize)), // read position
+            (usize, (usize, usize)) // write position
+        >();
+        is_complete::<Dimension<Of<Pair<Data>>>,
+            usize,
+            (usize, usize),
+            (usize, usize)
+        >();
     }
 
     #[test]
