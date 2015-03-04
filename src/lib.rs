@@ -66,3 +66,25 @@ pub fn does_count<T, U>()
     where
         T: Count<U>
 {}
+
+#[cfg(test)]
+pub fn does_to_index<T, U, V>()
+    where
+        T: ToIndex<U, V>
+{}
+
+#[cfg(test)]
+pub fn does_to_pos<T, U, V>()
+    where
+        T: ToPos<U, V>
+{}
+
+#[cfg(test)]
+pub fn is_complete<T, U, V, W>()
+    where
+        T: Count<U> + ToIndex<U, V> + ToPos<U, W>
+{
+    does_count::<T, U>();
+    does_to_index::<T, U, V>();
+    does_to_pos::<T, U, W>();
+}

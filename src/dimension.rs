@@ -74,8 +74,9 @@ mod tests {
 
     #[test]
     fn features() {
-        does_count::<Dimension<Data>, usize>();
+        is_complete::<Dimension<Data>, usize, usize, usize>();
         does_count::<Dimension<Subspace<Pair<Data>>>, (usize, usize)>();
+        // does_count::<Dimension<Of<Pair<Data>>>, usize>();
     }
 
     #[test]
