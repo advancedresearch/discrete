@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use Construct;
 use Data;
 use Count;
+use Of;
 use Subspace;
 use ToIndex;
 use ToPos;
@@ -25,6 +26,16 @@ impl<T, U> Count<(usize, U)> for Dimension<Subspace<T>>
     fn count(&self, (a, b): (usize, U)) -> usize {
         let subspace: T = Construct::new();
         a * subspace.count(b)
+    }
+}
+
+impl<T, U> Count<U> for Dimension<Of<T>>
+    where
+        T: Construct + Count<U>
+{
+    fn count(&self, dim: U) -> usize {
+        let of: T = Construct::new();
+        of.count(dim)
     }
 }
 
@@ -76,7 +87,7 @@ mod tests {
     fn features() {
         is_complete::<Dimension<Data>, usize, usize, usize>();
         does_count::<Dimension<Subspace<Pair<Data>>>, (usize, usize)>();
-        // does_count::<Dimension<Of<Pair<Data>>>, usize>();
+        does_count::<Dimension<Of<Pair<Data>>>, usize>();
     }
 
     #[test]
