@@ -1,4 +1,5 @@
 #![deny(missing_docs)]
+#![feature(collections, core)]
 
 //! Combinatorial phantom types for discrete mathematics.
 //!
@@ -41,6 +42,7 @@ pub use dimension::Dimension;
 pub use pair::Pair;
 pub use eq_pair::EqPair;
 pub use permutation::Permutation;
+pub use context::Context;
 
 mod construct;
 mod count;
@@ -52,6 +54,7 @@ mod dimension;
 mod pair;
 mod eq_pair;
 mod permutation;
+mod context;
 
 /// Used by the final subspace.
 #[derive(Copy)]

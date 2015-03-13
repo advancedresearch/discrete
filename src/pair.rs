@@ -90,7 +90,7 @@ ToIndex<U, (V, V)> for Pair<Of<T>>
 impl ToPos<usize, (usize, usize)> for Pair<Data> {
     fn to_pos(&self, _dim: usize, index: usize, pos: &mut (usize, usize)) {
         let max = ((-1f64 + (8f64 * index as f64 + 1f64).sqrt()) / 2f64) as usize + 1;
-        let min = index - max * (max + 1) / 2 + max;
+        let min = index.wrapping_sub(max * (max + 1) / 2).wrapping_add(max);
         *pos = (min, max)
     }
 }
