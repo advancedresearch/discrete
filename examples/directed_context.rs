@@ -6,7 +6,7 @@ In this example we will try to solve the problem:
     A farmer want to cross a river, using a boat with room for two objects.
     With him he has a wolf, a sheep, and some cabbage.
     If not watching, the wolf eats the sheep, and the sheep eats the cabbage.
-    Find the a way to cross the river without the farmer loosing any object.
+    Find an upper bound of legal moves below 200.
 
 We have 4 objects: Wolf, sheep, cabbage and the boat.
 The wolf, sheep and cabbage can be in 3 locations: Side A, boat, side B.
@@ -25,8 +25,12 @@ There is a rule for context spaces that information that is symmetric
 or invariant for one object can be removed without loosing context.
 The boat in this case can always move from one side to the other,
 regardless the states of other objects.
-
 Therefore, we can reduce the space to `[3, 3, 3]`.
+This leaves us with 162 moves.
+
+A side note: The amount of memory needed to store any rules for such a puzzle
+is in worst case 162 bits, because each bit can tell us whether a move is legal
+or not. This is the same information we get from rules.
 
 */
 
@@ -37,10 +41,9 @@ use discrete::*;
 fn main() {
     let context: DirectedContext<Data> = Construct::new();
 
-    let object = ["wolf", "sheep", "cabbage", "boat"];
+    let object = ["wolf", "sheep", "cabbage"];
     let side = ["side A", "boat", "side B"];
-    let side_map: &[&[usize]] = &[&[0, 1, 2], &[0, 1, 2], &[0, 1, 2], &[0, 2]];
-    let dim = vec![3, 3, 3, 2]; /* wolf, sheep, cabbage, boat */
+    let dim = vec![3, 3, 3]; /* wolf, sheep, cabbage, boat */
     let count = context.count(&dim);
     for x in 0..count {
         let mut pos = (vec![], 0, 0);
@@ -48,12 +51,12 @@ fn main() {
 
         println!("{:?}", pos);
         print!("the {} ", object[pos.1]);
-        print!("went from {} ", side[side_map[pos.1][pos.0[pos.1]]]);
-        println!("to {}", side[side_map[pos.1][pos.2]]);
+        print!("went from {} ", side[pos.0[pos.1]]);
+        println!("to {}", side[pos.2]);
 
-        for i in 0..4 {
+        for i in 0..3 {
             let pos_state = pos.0[i];
-            println!("{} is at {}", object[i], side[side_map[i][pos_state]]);
+            println!("{} is at {}", object[i], side[pos_state]);
         }
     }
     println!("count {}", count);
