@@ -41,8 +41,10 @@ pub use dimension_n::DimensionN;
 pub use dimension::Dimension;
 pub use pair::Pair;
 pub use eq_pair::EqPair;
+pub use neq_pair::NeqPair;
 pub use permutation::Permutation;
 pub use context::Context;
+pub use directed_context::DirectedContext;
 
 mod construct;
 mod count;
@@ -53,8 +55,10 @@ mod dimension_n;
 mod dimension;
 mod pair;
 mod eq_pair;
+mod neq_pair;
 mod permutation;
 mod context;
+mod directed_context;
 
 /// Used by the final subspace.
 #[derive(Copy)]
