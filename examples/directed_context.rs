@@ -26,10 +26,15 @@ or invariant for one object can be removed without loosing context.
 The boat in this case can always move from one side to the other,
 regardless the states of other objects.
 Therefore, we can reduce the space to `[3, 3, 3]`.
-This leaves us with 162 moves.
+This reduces to 162 moves.
+
+Each object can only move from side A to side B by using the boat.
+We can model a space with dimension `[2, 2, 2, 3]` where the last
+dimension tells which item can use the boat.
+This reduces to 120 moves.
 
 A side note: The amount of memory needed to store any rules for such a puzzle
-is in worst case 162 bits, because each bit can tell us whether a move is legal
+is in worst case 120 bits, because each bit can tell us whether a move is legal
 or not. This is the same information we get from rules.
 
 */
@@ -40,6 +45,9 @@ use discrete::*;
 
 fn main() {
     let context: DirectedContext<Data> = Construct::new();
+
+    let dim = vec![2, 2, 2, 3];
+    let shorter_count = context.count(&dim);
 
     let object = ["wolf", "sheep", "cabbage"];
     let side = ["side A", "boat", "side B"];
@@ -60,4 +68,6 @@ fn main() {
         }
     }
     println!("count {}", count);
+
+    println!("shorter_counter {}", shorter_count);
 }
