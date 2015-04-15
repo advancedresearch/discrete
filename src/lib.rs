@@ -1,5 +1,5 @@
 #![deny(missing_docs)]
-#![feature(collections, core)]
+#![feature(collections)]
 
 //! Combinatorial phantom types for discrete mathematics.
 //!
@@ -29,6 +29,8 @@
 //! For any constructed space, there is a dimension and position type.
 //! The dimension and position types are compositions,
 //! given by the type of the constructed space.
+
+extern crate num;
 
 use std::marker::PhantomData;
 
@@ -61,7 +63,7 @@ mod context;
 mod directed_context;
 
 /// Used by the final subspace.
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 pub struct Data;
 /// Used to nest a subspace.
 pub struct Subspace<T>(PhantomData<T>);

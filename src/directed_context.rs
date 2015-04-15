@@ -10,53 +10,6 @@ use ToPos;
 /// Same as `Context`, but for directed edges.
 pub struct DirectedContext<T>(PhantomData<T>);
 
-/// Computes subspace offset from which index that changes.
-/// The space is divided into N subspaces,
-/// because only one axis can change at a time.
-///
-/// ```ignore
-/// [(a, x), b, c]
-/// [a, (b, x), c]
-/// [a, b, (c, x)]
-/// ```
-fn subspace_offset(v: &[usize], ind: usize) -> usize {
-    use NeqPair;
-
-    let pair: NeqPair<Data> = Construct::new();
-    let mut sum = 0;
-    for i in 0..ind {
-        let mut prod = 1;
-        for j in 0..v.len() {
-            if i == j { continue; }
-            prod *= v[j];
-        }
-        sum += pair.count(v[i]) * prod;
-    }
-    sum
-}
-
-/// Computes the index of the axis that changes from index position.
-/// This works because the layout are separated by which
-/// axis that changes, and the subspace offset can be computed.
-/// Returns `(ind, offset)`
-fn ind_from_index(v: &[usize], index: usize) -> (usize, usize) {
-    use NeqPair;
-
-    let pair: NeqPair<Data> = Construct::new();
-    let mut sum = 0;
-    for i in 0..v.len() {
-        let mut prod = 1;
-        for j in 0..v.len() {
-            if i == j { continue; }
-            prod *= v[j];
-        }
-        let add = pair.count(v[i]) * prod;
-        if sum + add > index { return (i, sum); }
-        sum += add;
-    }
-    (v.len(), sum)
-}
-
 impl<T> Construct for DirectedContext<T> {
     fn new() -> DirectedContext<T> { DirectedContext(PhantomData) }
 }
