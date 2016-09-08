@@ -128,7 +128,11 @@ impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
 }
 
 impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for Context<Data> {
-    fn to_index(&self, dim: &'a [usize], (p, ind, b): (&'a [usize], usize, usize)) -> usize {
+    fn to_index(
+        &self,
+        dim: &'a [usize],
+        (p, ind, b): (&'a [usize], usize, usize)
+    ) -> usize {
         use std::cmp::{ min, max };
         use Pair;
 
@@ -167,6 +171,62 @@ for Context<Subspace<T>>
         let count = subspace.count(dim);
         let data: Context<Data> = Construct::new();
         data.to_index(my_dim, my_pos) * count + subspace.to_index(dim, pos)
+    }
+}
+
+impl<'a, T, U, V> ToIndex<&'a [U], (&'a [V], usize, V)> for Context<Of<T>>
+    where
+        T: Construct + Count<U> + ToIndex<U, V>,
+        U: Copy,
+        V: Copy
+{
+    fn to_index(
+        &self,
+        dim: &'a [U],
+        (p, ind, b): (&'a [V], usize, V)
+    ) -> usize {
+        fn subspace_offset<T, U>(v: &[U], ind: usize) -> usize
+            where T: Construct + Count<U>,
+                  U: Copy
+        {
+            use Pair;
+
+            let of: T = Construct::new();
+            let pair: Pair<Data> = Construct::new();
+            let mut sum = 0;
+            for i in 0..ind {
+                let mut prod = 1;
+                for j in 0..v.len() {
+                    if i == j { continue; }
+                    prod *= of.count(v[j]);
+                }
+                sum += pair.count(of.count(v[i])) * prod;
+            }
+            sum
+        }
+
+        use std::cmp::{ min, max };
+        use Pair;
+
+        let of: T = Construct::new();
+        let offset = subspace_offset::<T, U>(dim, ind);
+        let pair: Pair<Data> = Construct::new();
+        let mut prod = 1;
+        for j in 0..dim.len() {
+            if ind == j { continue; }
+            prod *= of.count(dim[j]);
+        }
+        // Pair doesn't care about dimension.
+        let single = pair.to_index(0,
+            (min(of.to_index(dim[ind], p[ind]), of.to_index(dim[ind], b)),
+             max(of.to_index(dim[ind], p[ind]), of.to_index(dim[ind], b))));
+        let pos_offset = single * prod;
+        let mut dim_index = 0;
+        for i in (0..p.len()).rev() {
+            if ind == i { continue; }
+            dim_index = dim_index * of.count(dim[i]) + of.to_index(dim[i], p[i]);
+        }
+        offset + pos_offset + dim_index
     }
 }
 
@@ -226,6 +286,8 @@ mod tests {
         does_to_index::<Context, &[usize], (&[usize], usize, usize)>();
         does_to_index::<Context<Subspace<Pair>>, (&[usize], usize),
             ((&[usize], usize, usize), (usize, usize))>();
+        does_to_index::<Context<Of<Pair>>, &[usize],
+            (&[(usize, usize)], usize, (usize, usize))>();
     }
 
     #[test]
@@ -260,7 +322,28 @@ mod tests {
         let x: Context<Of<Pair>> = Construct::new();
         let dim = &[3];
         assert_eq!(x.count(dim), 3);
+        assert_eq!(x.to_index(dim, (&[(0, 1)], 0, (0, 2))), 0);
+        assert_eq!(x.to_index(dim, (&[(0, 1)], 0, (1, 2))), 1);
+        assert_eq!(x.to_index(dim, (&[(0, 2)], 0, (1, 2))), 2);
         let dim = &[3, 3];
         assert_eq!(x.count(dim), 18);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 1)], 0, (0, 2))), 0);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 2)], 0, (0, 2))), 1);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (1, 2)], 0, (0, 2))), 2);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 1)], 0, (1, 2))), 3);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 2)], 0, (1, 2))), 4);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (1, 2)], 0, (1, 2))), 5);
+        assert_eq!(x.to_index(dim, (&[(0, 2), (0, 1)], 0, (1, 2))), 6);
+        assert_eq!(x.to_index(dim, (&[(0, 2), (0, 2)], 0, (1, 2))), 7);
+        assert_eq!(x.to_index(dim, (&[(0, 2), (1, 2)], 0, (1, 2))), 8);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 1)], 1, (0, 2))), 9);
+        assert_eq!(x.to_index(dim, (&[(0, 2), (0, 1)], 1, (0, 2))), 10);
+        assert_eq!(x.to_index(dim, (&[(1, 2), (0, 1)], 1, (0, 2))), 11);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 1)], 1, (1, 2))), 12);
+        assert_eq!(x.to_index(dim, (&[(0, 2), (0, 1)], 1, (1, 2))), 13);
+        assert_eq!(x.to_index(dim, (&[(1, 2), (0, 1)], 1, (1, 2))), 14);
+        assert_eq!(x.to_index(dim, (&[(0, 1), (0, 2)], 1, (1, 2))), 15);
+        assert_eq!(x.to_index(dim, (&[(0, 2), (0, 2)], 1, (1, 2))), 16);
+        assert_eq!(x.to_index(dim, (&[(1, 2), (0, 2)], 1, (1, 2))), 17);
     }
 }
