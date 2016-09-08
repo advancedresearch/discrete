@@ -274,6 +274,27 @@ impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
     }
 }
 
+impl<'a, T, U: Copy, V>
+ToPos<(&'a [usize], U), ((Vec<usize>, usize, usize), V)>
+for Context<Subspace<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, V>
+{
+    fn to_pos(
+        &self,
+        (a, b): (&'a [usize], U),
+        index: usize,
+        &mut (ref mut head, ref mut tail): &mut ((Vec<usize>, usize, usize), V)
+    ) {
+        let subspace: T = Construct::new();
+        let count = subspace.count(b);
+        let data: Context<Data> = Construct::new();
+        let x = index / count;
+        data.to_pos(a, index / count, head);
+        subspace.to_pos(b, index - x * count, tail)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::*;
@@ -288,6 +309,9 @@ mod tests {
             ((&[usize], usize, usize), (usize, usize))>();
         does_to_index::<Context<Of<Pair>>, &[usize],
             (&[(usize, usize)], usize, (usize, usize))>();
+        does_to_pos::<Context, &[usize], (Vec<usize>, usize, usize)>();
+        does_to_pos::<Context<Subspace<Pair>>, (&[usize], usize),
+            ((Vec<usize>, usize, usize), (usize, usize))>();
     }
 
     #[test]
@@ -315,6 +339,10 @@ mod tests {
         assert_eq!(x.to_index(dim, ((&[0, 1], 0, 1), (0, 2))), 4);
         assert_eq!(x.to_index(dim, ((&[0, 1], 0, 1), (1, 2))), 5);
         assert_eq!(x.to_index(dim, ((&[0, 1], 1, 0), (0, 1))), 6);
+
+        let mut pos = ((vec![0, 0], 0, 0), (0, 0));
+        x.to_pos(dim, 5, &mut pos);
+        assert_eq!(pos, ((vec![0, 1], 0, 1), (1, 2)));
     }
 
     #[test]
