@@ -7,6 +7,7 @@ use Of;
 use Subspace;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// Dimension is natural number, position is (min, max).
 pub struct EqPair<T = Data>(PhantomData<T>);
@@ -38,6 +39,35 @@ impl<T, U> Count<U> for EqPair<Of<T>>
         let of: T = Construct::new();
         let data: EqPair<Data> = Construct::new();
         data.count(of.count(dim))
+    }
+}
+
+
+impl Zero<usize, (usize, usize)> for EqPair<Data> {
+    fn zero(&self, _dim: usize) -> (usize, usize) { (0, 0) }
+}
+
+impl<T, U, V>
+Zero<(usize, U), ((usize, usize), V)> for EqPair<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, (_, dim): (usize, U)) -> ((usize, usize), V) {
+        let sub: T = Construct::new();
+        ((0, 0), sub.zero(dim))
+    }
+}
+
+impl<T, U, V>
+Zero<U, (V, V)> for EqPair<Of<T>>
+    where
+        T: Construct + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, dim: U) -> (V, V) {
+        let of: T = Construct::new();
+        (of.zero(dim), of.zero(dim))
     }
 }
 
@@ -140,11 +170,23 @@ ToPos<U, (V, V)> for EqPair<Of<T>>
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use Construct;
-    use Count;
-    use ToIndex;
-    use ToPos;
+    use super::super::*;
+
+    #[test]
+    fn features() {
+        is_complete::<EqPair, usize, (usize, usize), (usize, usize)>();
+        is_complete::<EqPair<Subspace<EqPair>>, (usize, usize),
+            ((usize, usize), (usize, usize)),
+            ((usize, usize), (usize, usize))>();
+        is_complete::<EqPair<Of<EqPair>>, usize,
+            ((usize, usize), (usize, usize)),
+            ((usize, usize), (usize, usize))>();
+        does_zero::<EqPair, usize, (usize, usize)>();
+        does_zero::<EqPair<Subspace<EqPair>>, (usize, usize),
+            ((usize, usize), (usize, usize))>();
+        does_zero::<EqPair<Of<EqPair>>, usize,
+            ((usize, usize), (usize, usize))>();
+    }
 
     #[test]
     fn test_eq_pair() {

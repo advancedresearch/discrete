@@ -7,6 +7,7 @@ use Of;
 use Subspace;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// Dimension is natural number, position is (min, max).
 pub struct NeqPair<T = Data>(PhantomData<T>);
@@ -38,6 +39,34 @@ impl<T, U> Count<U> for NeqPair<Of<T>>
         let of: T = Construct::new();
         let data: NeqPair<Data> = Construct::new();
         data.count(of.count(dim))
+    }
+}
+
+impl Zero<usize, (usize, usize)> for NeqPair<Data> {
+    fn zero(&self, _dim: usize) -> (usize, usize) { (0, 0) }
+}
+
+impl<T, U, V>
+Zero<(usize, U), ((usize, usize), V)> for NeqPair<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, (_, dim): (usize, U)) -> ((usize, usize), V) {
+        let sub: T = Construct::new();
+        ((0, 0), sub.zero(dim))
+    }
+}
+
+impl<T, U, V>
+Zero<U, (V, V)> for NeqPair<Of<T>>
+    where
+        T: Construct + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, dim: U) -> (V, V) {
+        let of: T = Construct::new();
+        (of.zero(dim), of.zero(dim))
     }
 }
 
@@ -153,6 +182,22 @@ ToPos<U, (V, V)> for NeqPair<Of<T>>
 #[cfg(test)]
 mod tests {
     use super::super::*;
+
+    #[test]
+    fn features() {
+        is_complete::<NeqPair, usize, (usize, usize), (usize, usize)>();
+        is_complete::<NeqPair<Subspace<NeqPair>>, (usize, usize),
+            ((usize, usize), (usize, usize)),
+            ((usize, usize), (usize, usize))>();
+        is_complete::<NeqPair<Of<NeqPair>>, usize,
+            ((usize, usize), (usize, usize)),
+            ((usize, usize), (usize, usize))>();
+        does_zero::<NeqPair, usize, (usize, usize)>();
+        does_zero::<NeqPair<Subspace<NeqPair>>, (usize, usize),
+            ((usize, usize), (usize, usize))>();
+        does_zero::<NeqPair<Of<NeqPair>>, usize,
+            ((usize, usize), (usize, usize))>();
+    }
 
     #[test]
     fn data() {

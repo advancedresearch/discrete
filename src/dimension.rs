@@ -7,6 +7,7 @@ use Of;
 use Subspace;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// Dimension is natural number, position is the same as index.
 pub struct Dimension<T = Data>(PhantomData<T>);
@@ -36,6 +37,33 @@ impl<T, U> Count<U> for Dimension<Of<T>>
     fn count(&self, dim: U) -> usize {
         let of: T = Construct::new();
         of.count(dim)
+    }
+}
+
+impl Zero<usize, usize> for Dimension<Data> {
+    fn zero(&self, _dim: usize) -> usize { 0 }
+}
+
+impl<T, U: Copy, V>
+Zero<(usize, U), (usize, V)> for Dimension<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>
+{
+    fn zero(&self, (_, dim): (usize, U)) -> (usize, V) {
+        let sub: T = Construct::new();
+        (0, sub.zero(dim))
+    }
+}
+
+impl<T, U, V>
+Zero<U, V> for Dimension<Of<T>>
+    where
+        T: Construct + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, dim: U) -> V {
+        let of: T = Construct::new();
+        of.zero(dim)
     }
 }
 
@@ -116,6 +144,13 @@ mod tests {
             (usize, usize),
             (usize, usize)
         >();
+        does_zero::<Dimension, usize, usize>();
+        does_zero::<Dimension<Subspace<Dimension>>,
+            (usize, usize),
+            (usize, usize)>();
+        does_zero::<Dimension<Of<Pair>>,
+            usize,
+            (usize, usize)>();
     }
 
     #[test]

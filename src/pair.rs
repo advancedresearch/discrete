@@ -7,6 +7,7 @@ use Of;
 use Subspace;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// Dimension is natural number, position is (min, max).
 pub struct Pair<T = Data>(PhantomData<T>);
@@ -38,6 +39,34 @@ impl<T, U> Count<U> for Pair<Of<T>>
         let of: T = Construct::new();
         let data: Pair<Data> = Construct::new();
         data.count(of.count(dim))
+    }
+}
+
+impl Zero<usize, (usize, usize)> for Pair<Data> {
+    fn zero(&self, _dim: usize) -> (usize, usize) { (0, 0) }
+}
+
+impl<T, U, V>
+Zero<(usize, U), ((usize, usize), V)> for Pair<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, (_, dim): (usize, U)) -> ((usize, usize), V) {
+        let sub: T = Construct::new();
+        ((0, 0), sub.zero(dim))
+    }
+}
+
+impl<T, U, V>
+Zero<U, (V, V)> for Pair<Of<T>>
+    where
+        T: Construct + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, dim: U) -> (V, V) {
+        let of: T = Construct::new();
+        (of.zero(dim), of.zero(dim))
     }
 }
 
@@ -141,6 +170,22 @@ ToPos<U, (V, V)> for Pair<Of<T>>
 #[cfg(test)]
 mod tests {
     use super::super::*;
+
+    #[test]
+    fn features() {
+        is_complete::<Pair, usize, (usize, usize), (usize, usize)>();
+        is_complete::<Pair<Subspace<Pair>>, (usize, usize),
+            ((usize, usize), (usize, usize)),
+            ((usize, usize), (usize, usize))>();
+        is_complete::<Pair<Of<Pair>>, usize,
+            ((usize, usize), (usize, usize)),
+            ((usize, usize), (usize, usize))>();
+        does_zero::<Pair, usize, (usize, usize)>();
+        does_zero::<Pair<Subspace<Pair>>, (usize, usize),
+            ((usize, usize), (usize, usize))>();
+        does_zero::<Pair<Of<Pair>>, usize,
+            ((usize, usize), (usize, usize))>();
+    }
 
     #[test]
     fn data() {

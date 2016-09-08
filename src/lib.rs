@@ -82,6 +82,7 @@ pub use construct::Construct;
 pub use count::Count;
 pub use to_index::ToIndex;
 pub use to_pos::ToPos;
+pub use zero::Zero;
 pub use power_set::PowerSet;
 pub use dimension_n::DimensionN;
 pub use dimension::Dimension;
@@ -96,6 +97,7 @@ mod construct;
 mod count;
 mod to_index;
 mod to_pos;
+mod zero;
 mod power_set;
 mod dimension_n;
 mod dimension;
@@ -118,6 +120,12 @@ pub struct Of<T>(PhantomData<T>);
 pub fn does_count<T, U>()
     where
         T: Count<U>
+{}
+
+#[cfg(test)]
+pub fn does_zero<T, U, V>()
+    where
+        T: Zero<U, V>
 {}
 
 #[cfg(test)]
