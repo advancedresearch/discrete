@@ -18,6 +18,14 @@
         - [x] Data
         - [x] Subspace<T>
         - [x] Of<T>
+    - [ ] DimensionN
+    - [ ] Context
+    - [ ] DirectedContext
+    - [ ] Permutation
+    - [ ] PowerSet
+        - [x] Data
+        - [x] Subspace<T>
+        - [x] Of<T>
 
 */
 
@@ -26,7 +34,7 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let x: Pair<Of<NeqPair>> = Construct::new();
+    let x: Pair<Of<PowerSet>> = Construct::new();
     let n = 3;
     let count = x.count(n);
     println!("count {:?}", count);
@@ -35,4 +43,5 @@ fn main() {
         x.to_pos(n, i, &mut pos);
         println!("{:?}", pos);
     }
+    println!("count {:?}", count);
 }
