@@ -270,7 +270,6 @@ impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
         p[ind_val] = min;
         *b = max;
         *ind = ind_val;
-
     }
 }
 
@@ -295,6 +294,78 @@ for Context<Subspace<T>>
     }
 }
 
+impl<'a, T, U, V>
+ToPos<&'a [U], (Vec<V>, usize, V)>
+for Context<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
+        U: Copy
+{
+    fn to_pos(
+        &self,
+        dim: &'a [U],
+        index: usize,
+        &mut (ref mut p, ref mut ind, ref mut b): &mut (Vec<V>, usize, V)
+    ) {
+        fn ind_from_index<T, U>(v: &[U], index: usize) -> (usize, usize)
+            where T: Construct + Count<U>,
+                  U: Copy
+        {
+            use Pair;
+
+            let of: T = Construct::new();
+            let pair: Pair<Data> = Construct::new();
+            let mut sum = 0;
+            for i in 0..v.len() {
+                let mut prod = 1;
+                for j in 0..v.len() {
+                    if i == j { continue; }
+                    prod *= of.count(v[j]);
+                }
+                let add = pair.count(of.count(v[i])) * prod;
+                if sum + add > index { return (i, sum); }
+                sum += add;
+            }
+            (v.len(), sum)
+        }
+
+        use Pair;
+
+        let of: T = Construct::new();
+        p.clear();
+        let pair_space: Pair<Data> = Construct::new();
+        let (ind_val, offset) = ind_from_index::<T, U>(dim, index);
+        // Get rid of offset.
+        // The rest equals: single * prod + dim_index
+        let index = index - offset;
+        let mut prod = 1;
+        for j in 0..dim.len() {
+            p.push(of.zero(dim[j])); // zero position
+            if ind_val == j { continue; }
+            prod *= of.count(dim[j]);
+        }
+        let single = index / prod;
+
+        let mut pair = (0, 0);
+        // Pair doesn't care about dimension.
+        pair_space.to_pos(0, single, &mut pair);
+        let (min, max) = pair;
+
+        // Resolve other dimension components.
+        let mut dim_index = index - single * prod;
+        for i in (0..p.len()).rev() {
+            if ind_val == i { continue; }
+            prod /= of.count(dim[i]);
+            let p_i = dim_index / prod;
+            of.to_pos(dim[i], p_i, &mut p[i]);
+            dim_index -= p_i * prod;
+        }
+        of.to_pos(dim[ind_val], min, &mut p[ind_val]);
+        of.to_pos(dim[ind_val], max, b);
+        *ind = ind_val;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::super::*;
@@ -312,6 +383,8 @@ mod tests {
         does_to_pos::<Context, &[usize], (Vec<usize>, usize, usize)>();
         does_to_pos::<Context<Subspace<Pair>>, (&[usize], usize),
             ((Vec<usize>, usize, usize), (usize, usize))>();
+        does_to_pos::<Context<Of<Pair>>, &[usize],
+            (Vec<(usize, usize)>, usize, (usize, usize))>();
     }
 
     #[test]
@@ -373,5 +446,9 @@ mod tests {
         assert_eq!(x.to_index(dim, (&[(0, 1), (0, 2)], 1, (1, 2))), 15);
         assert_eq!(x.to_index(dim, (&[(0, 2), (0, 2)], 1, (1, 2))), 16);
         assert_eq!(x.to_index(dim, (&[(1, 2), (0, 2)], 1, (1, 2))), 17);
+
+        let mut pos = (vec![(0, 0), (0, 0)], 0, (0, 0));
+        x.to_pos(dim, 16, &mut pos);
+        assert_eq!(pos, ((vec![(0, 2), (0, 2)], 1, (1, 2))));
     }
 }
