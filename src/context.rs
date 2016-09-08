@@ -4,6 +4,8 @@ use std::marker::PhantomData;
 use Construct;
 use Data;
 use Count;
+use Of;
+use Subspace;
 use ToIndex;
 use ToPos;
 use Zero;
@@ -87,6 +89,38 @@ impl<'a> Count<&'a [usize]> for Context<Data> {
     }
 }
 
+impl<'a, T, U> Count<(&'a [usize], U)> for Context<Subspace<T>>
+    where
+        T: Construct + Count<U>
+{
+    fn count(&self, (n, dim): (&'a [usize], U)) -> usize {
+        let sub: T = Construct::new();
+        let data: Context<Data> = Construct::new();
+        data.count(n) * sub.count(dim)
+    }
+}
+
+impl<'a, T, U> Count<&'a [U]> for Context<Of<T>>
+    where
+        T: Construct + Count<U>,
+        U: Copy
+{
+    fn count(&self, dim: &'a [U]) -> usize {
+        use Pair;
+
+        let of: T = Construct::new();
+        let pair: Pair<Data> = Construct::new();
+        let mut sum = pair.count(of.count(dim[0]));
+        let mut prod = of.count(dim[0]);
+        for &d in &dim[1..] {
+            let d = of.count(d);
+            sum = d * sum + pair.count(d) * prod;
+            prod *= d;
+        }
+        sum
+    }
+}
+
 impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
     fn zero(&self, dim: &'a [usize]) -> (Vec<usize>, usize, usize) {
         (vec![0; dim.len()], 0, 0)
@@ -114,6 +148,25 @@ impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for Context<Data> {
             dim_index = dim_index * dim[i] + p[i];
         }
         offset + pos_offset + dim_index
+    }
+}
+
+impl<'a, T, U, V>
+ToIndex<((&'a [usize]), U), ((&'a [usize], usize, usize), V)>
+for Context<Subspace<T>>
+    where
+        T: Construct + Count<U> + ToIndex<U, V>,
+        U: Copy
+{
+    fn to_index(
+        &self,
+        (my_dim, dim): (&'a [usize], U),
+        (my_pos, pos): ((&'a [usize], usize, usize), V)
+    ) -> usize {
+        let subspace: T = Construct::new();
+        let count = subspace.count(dim);
+        let data: Context<Data> = Construct::new();
+        data.to_index(my_dim, my_pos) * count + subspace.to_index(dim, pos)
     }
 }
 
@@ -168,6 +221,11 @@ mod tests {
     #[test]
     fn features() {
         does_count::<Context, &[usize]>();
+        does_count::<Context<Subspace<Pair>>, (&[usize], usize)>();
+        does_count::<Context<Of<Pair>>, &[usize]>();
+        does_to_index::<Context, &[usize], (&[usize], usize, usize)>();
+        does_to_index::<Context<Subspace<Pair>>, (&[usize], usize),
+            ((&[usize], usize, usize), (usize, usize))>();
     }
 
     #[test]
@@ -182,5 +240,27 @@ mod tests {
             x.to_pos(dim, i, &mut pos);
             assert_eq!(x.to_index(dim, (&pos.0, pos.1, pos.2)), i);
         }
+    }
+
+    #[test]
+    fn subspace() {
+        let x: Context<Subspace<Pair>> = Construct::new();
+        let dim = (&*vec![2, 2], 3);
+        assert_eq!(x.to_index(dim, ((&[0, 0], 0, 1), (0, 1))), 0);
+        assert_eq!(x.to_index(dim, ((&[0, 0], 0, 1), (0, 2))), 1);
+        assert_eq!(x.to_index(dim, ((&[0, 0], 0, 1), (1, 2))), 2);
+        assert_eq!(x.to_index(dim, ((&[0, 1], 0, 1), (0, 1))), 3);
+        assert_eq!(x.to_index(dim, ((&[0, 1], 0, 1), (0, 2))), 4);
+        assert_eq!(x.to_index(dim, ((&[0, 1], 0, 1), (1, 2))), 5);
+        assert_eq!(x.to_index(dim, ((&[0, 1], 1, 0), (0, 1))), 6);
+    }
+
+    #[test]
+    fn of() {
+        let x: Context<Of<Pair>> = Construct::new();
+        let dim = &[3];
+        assert_eq!(x.count(dim), 3);
+        let dim = &[3, 3];
+        assert_eq!(x.count(dim), 18);
     }
 }

@@ -44,7 +44,7 @@ use discrete::*;
 
 fn main() {
     let x: Context = Construct::new();
-    let n = &[3, 2];
+    let n = &[3, 3];
     let count = x.count(n);
     println!("count {:?}", count);
     let mut pos = x.zero(n);
