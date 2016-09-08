@@ -21,7 +21,7 @@ impl<'a> Count<&'a [usize]> for DirectedContext<Data> {
         let pair: NeqPair<Data> = Construct::new();
         let mut sum = pair.count(dim[0]);
         let mut prod = dim[0];
-        for &d in dim.tail() {
+        for &d in &dim[1..] {
             sum = d * sum + pair.count(d) * prod;
             prod *= d;
         }

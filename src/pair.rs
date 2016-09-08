@@ -1,4 +1,3 @@
-use num::Float;
 use std::marker::PhantomData;
 
 use Construct;

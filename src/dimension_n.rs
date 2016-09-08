@@ -45,7 +45,7 @@ Count<&'a [U]> for DimensionN<Of<T>>
     fn count(&self, dim: &'a [U]) -> usize {
         let of: T = Construct::new();
         let mut prod = 1;
-        for i in (0..dim.len()) {
+        for i in 0..dim.len() {
             prod *= of.count(dim[i]);
         }
         prod

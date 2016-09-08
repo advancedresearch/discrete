@@ -1,5 +1,4 @@
 #![deny(missing_docs)]
-#![feature(collections)]
 
 //! Combinatorial phantom types for discrete mathematics.
 //!
@@ -16,7 +15,7 @@
 //! - Allocate enough memory for the space
 //! - Read and write data
 //! - Convert from and to natural numbers
-//! - Iterator through the space
+//! - Iterate through the space
 //! - Pick a random object of the space
 //!
 //! Iterating through the space can be done simply
@@ -29,8 +28,6 @@
 //! For any constructed space, there is a dimension and position type.
 //! The dimension and position types are compositions,
 //! given by the type of the constructed space.
-
-extern crate num;
 
 use std::marker::PhantomData;
 

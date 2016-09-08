@@ -1,7 +1,7 @@
 [package]
 
 name = "discrete"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["bvssvni <bvssvni@gmail.com>"]
 keywords = ["mathematics", "combinatorics", "phantom-types"]
 description = "Combinatorial phantom types for discrete mathematics"
@@ -14,6 +14,3 @@ homepage = "https://github.com/bvssvni/discrete"
 
 name = "discrete"
 path = "src/lib.rs"
-
-[dependencies.num]
-version = "*"
