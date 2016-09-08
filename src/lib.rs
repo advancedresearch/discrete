@@ -5,9 +5,9 @@
 //! All discrete spaces has the following functions:
 //!
 //! ~~~ignore
-//!     fn count(dim) -> uint;
-//!     fn to_index(dim, pos) -> uint;
-//!     fn to_pos(dim, index, &mut pos);
+//! fn count(dim) -> usize;
+//! fn to_index(dim, pos) -> usize;
+//! fn to_pos(dim, index, &mut pos);
 //! ~~~
 //!
 //! This makes it possible to allocate to solve tasks as:
