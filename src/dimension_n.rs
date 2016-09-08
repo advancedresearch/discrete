@@ -9,7 +9,7 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is a list of numbers, position is a list of numbers.
-pub struct DimensionN<T>(PhantomData<T>);
+pub struct DimensionN<T = Data>(PhantomData<T>);
 
 impl<T> Construct for DimensionN<T> {
     fn new() -> DimensionN<T> { DimensionN(PhantomData) }
@@ -167,7 +167,7 @@ mod tests {
 
     #[test]
     fn data() {
-        let x: DimensionN<Data> = Construct::new();
+        let x: DimensionN = Construct::new();
         let dim = &[3, 3];
         assert_eq!(x.count(dim), 9);
         assert_eq!(x.to_index(dim, &[0, 0]), 0);
@@ -180,7 +180,7 @@ mod tests {
 
     #[test]
     fn of() {
-        let x: DimensionN<Of<Pair<Data>>> = Construct::new();
+        let x: DimensionN<Of<Pair>> = Construct::new();
         let dim = [3, 4];
         assert_eq!(x.count(&dim), 18);
         assert_eq!(x.to_index(&dim, &[(0, 1), (0, 1)]), 0);

@@ -9,7 +9,7 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is natural number, position is (min, max).
-pub struct Pair<T>(PhantomData<T>);
+pub struct Pair<T = Data>(PhantomData<T>);
 
 impl<T> Construct for Pair<T> {
     fn new() -> Pair<T> { Pair(PhantomData) }
@@ -144,7 +144,7 @@ mod tests {
 
     #[test]
     fn data() {
-        let x: Pair<Data> = Construct::new();
+        let x: Pair = Construct::new();
         let dim = 4;
         assert_eq!(x.count(dim), 6);
         assert_eq!(x.to_index(dim, (0, 1)), 0);
@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn subspace() {
-        let x: Pair<Subspace<Dimension<Data>>> = Construct::new();
+        let x: Pair<Subspace<Dimension>> = Construct::new();
         let dim = (4, 3);
         assert_eq!(x.count(dim), 18);
         assert_eq!(x.to_index(dim, ((0, 1), 0)), 0);
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn of() {
-        let x: Pair<Of<DimensionN<Data>>> = Construct::new();
+        let x: Pair<Of<DimensionN>> = Construct::new();
         let dim = [2, 2];
         assert_eq!(x.count(&dim), 6);
         assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 0])), 0);

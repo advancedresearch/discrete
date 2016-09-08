@@ -9,7 +9,7 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is natural number, position is the same as index.
-pub struct Dimension<T>(PhantomData<T>);
+pub struct Dimension<T = Data>(PhantomData<T>);
 
 impl<T> Construct for Dimension<T> {
     fn new() -> Dimension<T> { Dimension(PhantomData) }
@@ -105,13 +105,13 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<Dimension<Data>, usize, usize, usize>();
-        is_complete::<Dimension<Subspace<Pair<Data>>>,
+        is_complete::<Dimension, usize, usize, usize>();
+        is_complete::<Dimension<Subspace<Pair>>,
             (usize, usize), // dimension
             (usize, (usize, usize)), // read position
             (usize, (usize, usize)) // write position
         >();
-        is_complete::<Dimension<Of<Pair<Data>>>,
+        is_complete::<Dimension<Of<Pair>>,
             usize,
             (usize, usize),
             (usize, usize)
@@ -120,7 +120,7 @@ mod tests {
 
     #[test]
     fn subspace() {
-        type D2 = Dimension<Subspace<Dimension<Data>>>;
+        type D2 = Dimension<Subspace<Dimension>>;
         type D3 = Dimension<Subspace<D2>>;
 
         let x: D3 = Construct::new();

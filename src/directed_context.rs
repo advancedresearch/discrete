@@ -8,7 +8,7 @@ use ToIndex;
 use ToPos;
 
 /// Same as `Context`, but for directed edges.
-pub struct DirectedContext<T>(PhantomData<T>);
+pub struct DirectedContext<T = Data>(PhantomData<T>);
 
 impl<T> Construct for DirectedContext<T> {
     fn new() -> DirectedContext<T> { DirectedContext(PhantomData) }
@@ -70,9 +70,9 @@ mod tests {
 
     #[test]
     fn data() {
-        let x: DirectedContext<Data> = Construct::new();
+        let x: DirectedContext = Construct::new();
         let dim = &[2, 2, 2];
-        // 12 edges on a cube
+        // 12 edges on a cube * 2 = 24 directed edges
         assert_eq!(x.count(dim), 24);
         assert_eq!(x.to_index(dim, (&[0, 0, 0], 0, 1)), 0);
         assert_eq!(x.to_index(dim, (&[1, 0, 0], 0, 0)), 1);

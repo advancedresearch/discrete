@@ -9,7 +9,7 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is natural number, position is (min, max).
-pub struct EqPair<T>(PhantomData<T>);
+pub struct EqPair<T = Data>(PhantomData<T>);
 
 impl<T> Construct for EqPair<T> {
     fn new() -> EqPair<T> { EqPair(PhantomData) }
@@ -142,7 +142,6 @@ ToPos<U, (V, V)> for EqPair<Of<T>>
 mod tests {
     use super::*;
     use Construct;
-    use Data;
     use Count;
     use ToIndex;
     use ToPos;
@@ -154,7 +153,7 @@ mod tests {
         // 4 5 6 0
         // 7 8 9 10
 
-        let eq_pair: EqPair<Data> = Construct::new();
+        let eq_pair: EqPair = Construct::new();
         let n = 4;
         let count = eq_pair.count(n);
         assert_eq!(count, 10);

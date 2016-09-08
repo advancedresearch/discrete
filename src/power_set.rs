@@ -8,7 +8,7 @@ use Data;
 use ToIndex;
 
 /// Dimension is natural number, position is a list of numbers.
-pub struct PowerSet<T>(PhantomData<T>);
+pub struct PowerSet<T = Data>(PhantomData<T>);
 
 impl<T> Construct for PowerSet<T> {
     fn new() -> PowerSet<T> { PowerSet(PhantomData) }
@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn data() {
-        let x: PowerSet<Data> = Construct::new();
+        let x: PowerSet = Construct::new();
         let dim = 6;
         assert_eq!(x.count(dim), 64);
         assert_eq!(x.to_index(dim, &[]), 0);
@@ -128,7 +128,7 @@ mod tests {
 
     #[test]
     fn of() {
-        let x: PowerSet<Of<Pair<Data>>> = Construct::new();
+        let x: PowerSet<Of<Pair>> = Construct::new();
         let dim = 4;
         assert_eq!(x.count(dim), 64);
         assert_eq!(x.to_index(dim, &[]), 0);

@@ -18,7 +18,7 @@ use ToPos;
 ///
 /// Dimensions of size 2 gives the edges on a hypercube of the number of dimensions.
 /// For example, `[2, 2, 2]` gives edges on a cube in 3 dimensions.
-pub struct Context<T>(PhantomData<T>);
+pub struct Context<T = Data>(PhantomData<T>);
 
 /// Computes subspace offset from which index that changes.
 /// The space is divided into N subspaces,
@@ -160,7 +160,7 @@ mod tests {
 
     #[test]
     fn data() {
-        let x: Context<Data> = Construct::new();
+        let x: Context = Construct::new();
         let dim = &[2, 2, 2];
         // 12 edges on a cube
         assert_eq!(x.count(dim), 12);

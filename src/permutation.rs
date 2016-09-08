@@ -11,7 +11,7 @@ use ToIndex;
 use Of;
 
 /// Dimension is natural number, position is a list of numbers.
-pub struct Permutation<T>(PhantomData<T>);
+pub struct Permutation<T = Data>(PhantomData<T>);
 
 impl<T> Construct for Permutation<T> {
     fn new() -> Permutation<T> {
@@ -182,7 +182,7 @@ mod test {
 
     #[test]
     fn data() {
-        let permutation: Permutation<Data> = Construct::new();
+        let permutation: Permutation = Construct::new();
         assert_eq!(permutation.count(1), 1);
         assert_eq!(permutation.count(2), 2);
         assert_eq!(permutation.count(3), 6);
@@ -200,7 +200,7 @@ mod test {
 
     #[test]
     fn of() {
-        let space: Permutation<Of<Pair<Data>>> = Construct::new();
+        let space: Permutation<Of<Pair>> = Construct::new();
         let dim = 3;
         let count = space.count(dim);
         let mut pos = Vec::new();

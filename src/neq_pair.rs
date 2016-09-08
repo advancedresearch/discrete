@@ -9,7 +9,7 @@ use ToIndex;
 use ToPos;
 
 /// Dimension is natural number, position is (min, max).
-pub struct NeqPair<T>(PhantomData<T>);
+pub struct NeqPair<T = Data>(PhantomData<T>);
 
 impl<T> Construct for NeqPair<T> {
     fn new() -> NeqPair<T> { NeqPair(PhantomData) }
@@ -156,7 +156,7 @@ mod tests {
 
     #[test]
     fn data() {
-        let x: NeqPair<Data> = Construct::new();
+        let x: NeqPair = Construct::new();
         let dim = 4;
         assert_eq!(x.count(dim), 12);
         assert_eq!(x.to_index(dim, (0, 1)), 0);
@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn subspace() {
-        let x: NeqPair<Subspace<Dimension<Data>>> = Construct::new();
+        let x: NeqPair<Subspace<Dimension>> = Construct::new();
         let dim = (4, 3);
         assert_eq!(x.count(dim), 36);
         assert_eq!(x.to_index(dim, ((0, 1), 0)), 0);
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn of() {
-        let x: NeqPair<Of<DimensionN<Data>>> = Construct::new();
+        let x: NeqPair<Of<DimensionN>> = Construct::new();
         let dim = [2, 2];
         assert_eq!(x.count(&dim), 12);
         assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 0])), 0);
