@@ -6,6 +6,7 @@ use Data;
 use Count;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// Same as `Context`, but for directed edges.
 pub struct DirectedContext<T = Data>(PhantomData<T>);
@@ -26,6 +27,12 @@ impl<'a> Count<&'a [usize]> for DirectedContext<Data> {
             prod *= d;
         }
         sum
+    }
+}
+
+impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data> {
+    fn zero(&self, dim: &'a [usize]) -> (Vec<usize>, usize, usize) {
+        (vec![0; dim.len()], 0, 0)
     }
 }
 
@@ -67,6 +74,11 @@ impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data
 #[cfg(test)]
 mod tests {
     use super::super::*;
+
+    #[test]
+    fn features() {
+        does_count::<DirectedContext, &[usize]>();
+    }
 
     #[test]
     fn data() {

@@ -6,6 +6,7 @@ use Data;
 use Count;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// A discrete space that can model spatial operations over arbitrary states,
 /// therefore useful for context analysis.
@@ -86,6 +87,12 @@ impl<'a> Count<&'a [usize]> for Context<Data> {
     }
 }
 
+impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
+    fn zero(&self, dim: &'a [usize]) -> (Vec<usize>, usize, usize) {
+        (vec![0; dim.len()], 0, 0)
+    }
+}
+
 impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for Context<Data> {
     fn to_index(&self, dim: &'a [usize], (p, ind, b): (&'a [usize], usize, usize)) -> usize {
         use std::cmp::{ min, max };
@@ -157,6 +164,11 @@ impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
 #[cfg(test)]
 mod tests {
     use super::super::*;
+
+    #[test]
+    fn features() {
+        does_count::<Context, &[usize]>();
+    }
 
     #[test]
     fn data() {

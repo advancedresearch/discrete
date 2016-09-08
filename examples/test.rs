@@ -20,7 +20,13 @@
         - [x] Of<T>
     - [ ] DimensionN
     - [ ] Context
+        - [x] Data
+        - [ ] Subspace<T>
+        - [ ] Of<T>
     - [ ] DirectedContext
+        - [x] Data
+        - [ ] Subspace<T>
+        - [ ] Of<T>
     - [ ] Permutation
         - [x] Data
         - [x] Subspace<T>
@@ -37,8 +43,8 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let x: Permutation<Of<Permutation>> = Construct::new();
-    let n = 3;
+    let x: Context = Construct::new();
+    let n = &[3, 2];
     let count = x.count(n);
     println!("count {:?}", count);
     let mut pos = x.zero(n);
