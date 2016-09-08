@@ -59,9 +59,7 @@ impl<T, U, V> Zero<(usize, U), (Vec<usize>, V)> for PowerSet<Subspace<T>>
     }
 }
 
-impl<T, U, V>
-Zero<U, Vec<V>>
-for PowerSet<Of<T>>
+impl<T, U, V> Zero<U, Vec<V>> for PowerSet<Of<T>>
     where
         T: Construct + Count<U> + Zero<U, V>,
         U: Copy

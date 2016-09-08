@@ -5,10 +5,11 @@ use std::default::Default;
 use Construct;
 use Count;
 use Data;
+use Of;
 use Subspace;
 use ToPos;
 use ToIndex;
-use Of;
+use Zero;
 
 /// Dimension is natural number, position is a list of numbers.
 pub struct Permutation<T = Data>(PhantomData<T>);
@@ -52,6 +53,36 @@ impl<T, U> Count<U> for Permutation<Of<T>>
             res *= x;
         }
         res
+    }
+}
+
+impl Zero<usize, Vec<usize>> for Permutation<Data> {
+    fn zero(&self, dim: usize) -> Vec<usize> {
+        vec![0, dim]
+    }
+}
+
+impl<T, U: Copy, V> Zero<(usize, U), (Vec<usize>, V)>
+for Permutation<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>
+{
+    fn zero(&self, (n, dim): (usize, U)) -> (Vec<usize>, V) {
+        let sub: T = Construct::new();
+        let data: Permutation<Data> = Construct::new();
+        (data.zero(n), sub.zero(dim))
+    }
+}
+
+impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>,
+        U: Copy,
+        V: Default + Clone
+{
+    fn zero(&self, dim: U) -> Vec<V> {
+        let of: T = Construct::new();
+        vec![of.zero(dim); of.count(dim)]
     }
 }
 
@@ -179,6 +210,22 @@ impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
 #[cfg(test)]
 mod test {
     use super::super::*;
+
+    #[test]
+    fn features() {
+        is_complete::<Permutation, usize, &[usize], Vec<usize>>();
+        is_complete::<Permutation<Subspace<Pair>>, (usize, usize),
+            (&[usize], (usize, usize)),
+            (Vec<usize>, (usize, usize))>();
+        is_complete::<Permutation<Of<Pair>>, usize,
+            &[(usize, usize)],
+            Vec<(usize, usize)>>();
+        does_zero::<Permutation, usize, Vec<usize>>();
+        does_zero::<Permutation<Subspace<Pair>>, (usize, usize),
+            (Vec<usize>, (usize, usize))>();
+        does_zero::<Permutation<Of<Pair>>, usize,
+            Vec<(usize, usize)>>();
+    }
 
     #[test]
     fn data() {

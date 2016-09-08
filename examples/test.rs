@@ -22,6 +22,9 @@
     - [ ] Context
     - [ ] DirectedContext
     - [ ] Permutation
+        - [x] Data
+        - [x] Subspace<T>
+        - [x] Of<T>
     - [ ] PowerSet
         - [x] Data
         - [x] Subspace<T>
@@ -34,7 +37,7 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let x: Pair<Of<PowerSet>> = Construct::new();
+    let x: Permutation<Of<Permutation>> = Construct::new();
     let n = 3;
     let count = x.count(n);
     println!("count {:?}", count);
