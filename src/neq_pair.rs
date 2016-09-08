@@ -9,7 +9,8 @@ use ToIndex;
 use ToPos;
 use Zero;
 
-/// Dimension is natural number, position is (min, max).
+/// Dimension is natural number, position is (a, b).
+/// Represents all directional pairs that has not same element for `a` and `b`.
 pub struct NeqPair<T = Data>(PhantomData<T>);
 
 impl<T> Construct for NeqPair<T> {
@@ -131,6 +132,9 @@ impl ToPos<usize, (usize, usize)> for NeqPair<Data> {
             pair.to_pos(dim, index / 2, pos);
         } else {
             pair.to_pos(dim, (index - 1) / 2, pos);
+            let tmp = pos.1;
+            pos.1 = pos.0;
+            pos.0 = tmp;
         }
     }
 }
@@ -214,6 +218,8 @@ mod tests {
         let mut new_pos = (0, 0);
         x.to_pos(dim, 6, &mut new_pos);
         assert_eq!(new_pos, (0, 3));
+        x.to_pos(dim, 5, &mut new_pos);
+        assert_eq!(new_pos, (2, 1));
     }
 
     #[test]

@@ -26,8 +26,8 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let x: NeqPair = Construct::new();
-    let n = 4;
+    let x: Pair<Of<NeqPair>> = Construct::new();
+    let n = 3;
     let count = x.count(n);
     println!("count {:?}", count);
     let mut pos = x.zero(n);
