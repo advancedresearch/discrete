@@ -127,6 +127,36 @@ impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for Context<Data> {
     }
 }
 
+impl<'a, T, U: Copy, V>
+Zero<(&'a [usize], U), ((Vec<usize>, usize, usize), V)>
+for Context<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>
+{
+    fn zero(&self, (n, dim): (&'a [usize], U)) -> ((Vec<usize>, usize, usize), V) {
+        let sub: T = Construct::new();
+        let data: Context<Data> = Construct::new();
+        (data.zero(n), sub.zero(dim))
+    }
+}
+
+impl<'a, T, U, V>
+Zero<&'a [U], (Vec<V>, usize, V)>
+for Context<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, dim: &'a [U]) -> (Vec<V>, usize, V) {
+        let of: T = Construct::new();
+        let mut v = Vec::with_capacity(dim.len());
+        for i in 0..dim.len() {
+            v.push(of.zero(dim[i]));
+        }
+        (v, 0, of.zero(dim[0]))
+    }
+}
+
 impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for Context<Data> {
     fn to_index(
         &self,
@@ -384,6 +414,11 @@ mod tests {
         does_to_pos::<Context<Subspace<Pair>>, (&[usize], usize),
             ((Vec<usize>, usize, usize), (usize, usize))>();
         does_to_pos::<Context<Of<Pair>>, &[usize],
+            (Vec<(usize, usize)>, usize, (usize, usize))>();
+        does_zero::<Context, &[usize], (Vec<usize>, usize, usize)>();
+        does_zero::<Context<Subspace<Pair>>, (&[usize], usize),
+            ((Vec<usize>, usize, usize), (usize, usize))>();
+        does_zero::<Context<Of<Pair>>, &[usize],
             (Vec<(usize, usize)>, usize, (usize, usize))>();
     }
 
