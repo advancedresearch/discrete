@@ -85,8 +85,6 @@ fn main() {
     let triangle_kinds: DimensionN = Construct::new();
     let dim = &[triangles.len(); 3];
     println!("{}", triangle_kinds.count(dim));
-
-    print_rotation();
 }
 
 fn print_edges() {
@@ -145,43 +143,3 @@ number itself. It could have properties that determine
 some information that can be used to speed it up.
 
 */
-
-fn gen_rotation_map(n: usize) -> Vec<Vec<usize>> {
-    let mut res = vec![];
-    for i in 0..n {
-        let mut row = vec![];
-        for j in 0..n {
-            row.push((j + i) % n);
-        }
-        res.push(row)
-    }
-    res
-}
-
-fn print_rotation() {
-    let x: DimensionN = Construct::new();
-    let n = 10;
-    let iter = gen_rotation_map(n);
-    let dim = &*vec![2; n];
-    let count = x.count(dim);
-    let mut a = vec![0; n];
-    let mut b = vec![0; n];
-    let mut counter = 0;
-    'i: for i in 0..count {
-        x.to_pos(dim, i, &mut a);
-        let mut smaller = false;
-
-        for k in 0..iter.len() {
-            for m in 0..n {
-                b[m] = a[iter[k][m]];
-            }
-            if x.to_index(dim, &b) < i { continue 'i; }
-        }
-
-        if count < 500 || counter % 100000 == 0 {
-            println!("{:?},", a);
-        }
-        counter += 1;
-    }
-    println!("counter {}", counter);
-}

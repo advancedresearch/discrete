@@ -50,7 +50,7 @@ fn main() {
     let count = x.count(dim);
     let mut a = vec![0; n];
     let mut b = vec![0; n];
-    let mut counter = 0;
+    let mut counter: u64 = 0;
     'i: for i in 0..count {
         x.to_pos(dim, i, &mut a);
 
