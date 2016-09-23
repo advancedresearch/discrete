@@ -48,14 +48,14 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let dir: Permutation<Of<Permutation>> = Construct::new();
+    let dir: PowerSet<Of<Permutation>> = Construct::new();
     let dim = 2;
     let count = dir.count(dim);
-    println!("count {}", count);
     let mut pos = dir.zero(dim);
     for i in 0..count {
         dir.to_pos(dim, i, &mut pos);
         print!("{:?}", pos);
-        println!(" index {}", dir.to_index(dim, &pos));
+        println!(" => {}", dir.to_index(dim, &pos));
     }
+    println!("count {}", count);
 }
