@@ -75,15 +75,15 @@ for DirectedContext<Of<T>>
     }
 }
 
-impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for DirectedContext<Data> {
+impl<'a> ToIndex<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data> {
     fn to_index(
         &self, dim: &'a [usize],
-        &(p, ind, b): &(&'a [usize], usize, usize)
+        &(ref p, ind, b): &(Vec<usize>, usize, usize)
     ) -> usize {
         use Context;
 
         let context: Context<Data> = Construct::new();
-        let index = context.to_index(dim, &(p, ind, b));
+        let index = context.to_index(dim, &(p.clone(), ind, b));
         if p[ind] > b {
             2 * index + 1
         } else {
@@ -92,7 +92,7 @@ impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for DirectedContext<D
     }
 }
 
-impl<'a, T, U, V> ToIndex<&'a [U], (&'a [V], usize, V)>
+impl<'a, T, U, V> ToIndex<&'a [U], (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
     where
         T: Construct + Count<U> + ToIndex<U, V>,
@@ -102,13 +102,13 @@ for DirectedContext<Of<T>>
     fn to_index(
         &self,
         dim: &'a [U],
-        &(p, ind, ref b): &(&'a [V], usize, V)
+        &(ref p, ind, ref b): &(Vec<V>, usize, V)
     ) -> usize {
         use Context;
 
         let of: T = Construct::new();
         let context: Context<Of<T>> = Construct::new();
-        let index = context.to_index(dim, &(p, ind, b.clone()));
+        let index = context.to_index(dim, &(p.clone(), ind, b.clone()));
         if of.to_index(dim[ind], &p[ind]) > of.to_index(dim[ind], b) {
             2 * index + 1
         } else {
@@ -172,16 +172,8 @@ mod tests {
 
     #[test]
     fn features() {
-        does_count::<DirectedContext, &[usize]>();
-        does_count::<DirectedContext<Of<Pair>>, &[usize]>();
-        does_to_index::<DirectedContext, &[usize], (&[usize], usize, usize)>();
-        does_to_index::<DirectedContext<Of<Pair>>, &[usize],
-            (&[(usize, usize)], usize, (usize, usize))>();
-        does_to_pos::<DirectedContext, &[usize], (Vec<usize>, usize, usize)>();
-        does_to_pos::<DirectedContext<Of<Pair>>, &[usize],
-            (Vec<(usize, usize)>, usize, (usize, usize))>();
-        does_zero::<DirectedContext, &[usize], (Vec<usize>, usize, usize)>();
-        does_zero::<Context<Of<Pair>>, &[usize],
+        is_complete::<DirectedContext, &[usize], (Vec<usize>, usize, usize)>();
+        is_complete::<DirectedContext<Of<Pair>>, &[usize],
             (Vec<(usize, usize)>, usize, (usize, usize))>();
     }
 
@@ -191,13 +183,13 @@ mod tests {
         let dim = &[2, 2, 2];
         // 12 edges on a cube * 2 = 24 directed edges
         assert_eq!(x.count(dim), 24);
-        assert_eq!(x.to_index(dim, &(&[0, 0, 0], 0, 1)), 0);
-        assert_eq!(x.to_index(dim, &(&[1, 0, 0], 0, 0)), 1);
+        assert_eq!(x.to_index(dim, &(vec![0, 0, 0], 0, 1)), 0);
+        assert_eq!(x.to_index(dim, &(vec![1, 0, 0], 0, 0)), 1);
         for i in 0..x.count(dim) {
             let mut pos = (vec![], 0, 0);
             x.to_pos(dim, i, &mut pos);
             println!("{:?}", pos);
-            assert_eq!(x.to_index(dim, &(&pos.0, pos.1, pos.2)), i);
+            assert_eq!(x.to_index(dim, &pos), i);
         }
         // assert!(false);
     }

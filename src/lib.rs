@@ -145,9 +145,10 @@ pub fn does_to_pos<T, U, V>()
 #[cfg(test)]
 pub fn is_complete<T, U, V>()
     where
-        T: Count<U> + ToIndex<U, V> + ToPos<U, V>
+        T: Count<U> + Zero<U, V> + ToIndex<U, V> + ToPos<U, V>
 {
     does_count::<T, U>();
+    does_zero::<T, U, V>();
     does_to_index::<T, U, V>();
     does_to_pos::<T, U, V>();
 }
