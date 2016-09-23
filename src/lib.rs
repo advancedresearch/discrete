@@ -140,6 +140,10 @@ pub fn does_to_pos<T, U, V>()
         T: ToPos<U, V>
 {}
 
+// T - discrete space
+// U - dimension
+// V - Read position
+// W - Write position
 #[cfg(test)]
 pub fn is_complete<T, U, V, W>()
     where

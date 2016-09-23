@@ -7,6 +7,7 @@ use Subspace;
 use Of;
 use ToIndex;
 use ToPos;
+use Zero;
 
 /// Dimension is a list of numbers, position is a list of numbers.
 pub struct DimensionN<T = Data>(PhantomData<T>);
@@ -49,6 +50,42 @@ Count<&'a [U]> for DimensionN<Of<T>>
             prod *= of.count(dim[i]);
         }
         prod
+    }
+}
+
+impl<'a> Zero<&'a [usize], Vec<usize>> for DimensionN<Data> {
+    fn zero(&self, dim: &'a [usize]) -> Vec<usize> {
+        vec![0, dim.len()]
+    }
+}
+
+impl<'a, T, U: Copy, V>
+Zero<(&'a [usize], U), (Vec<usize>, V)>
+for DimensionN<Subspace<T>>
+    where
+        T: Construct + Count<U> + Zero<U, V>
+{
+    fn zero(&self, (n, dim): (&'a [usize], U)) -> (Vec<usize>, V) {
+        let sub: T = Construct::new();
+        let data: DimensionN<Data> = Construct::new();
+        (data.zero(n), sub.zero(dim))
+    }
+}
+
+impl<'a, T, U, V>
+Zero<&'a [U], Vec<V>>
+for DimensionN<Of<T>>
+    where
+        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
+        U: Copy
+{
+    fn zero(&self, dim: &'a [U]) -> Vec<V> {
+        let of: T = Construct::new();
+        let mut v = Vec::with_capacity(dim.len());
+        for i in 0..dim.len() {
+            v.push(of.zero(dim[i]));
+        }
+        v
     }
 }
 
@@ -164,6 +201,16 @@ for DimensionN<Of<T>>
 #[cfg(test)]
 mod tests {
     use super::super::*;
+
+    #[test]
+    fn features() {
+        is_complete::<DimensionN, &[usize], &[usize], Vec<usize>>();
+        does_zero::<DimensionN, &[usize], Vec<usize>>();
+        does_zero::<DimensionN<Subspace<Pair>>, (&[usize], usize),
+            (Vec<usize>, (usize, usize))>();
+        does_zero::<DimensionN<Of<Pair>>, &[usize],
+            Vec<(usize, usize)>>();
+    }
 
     #[test]
     fn data() {
