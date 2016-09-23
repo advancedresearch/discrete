@@ -4,7 +4,6 @@ use Construct;
 use Data;
 use Count;
 use Of;
-use Subspace;
 use ToIndex;
 use ToPos;
 use Zero;
@@ -18,17 +17,6 @@ impl<T> Construct for Pair<T> {
 
 impl Count<usize> for Pair<Data> {
     fn count(&self, dim: usize) -> usize { dim * (dim - 1) / 2 }
-}
-
-impl<T, U> Count<(usize, U)> for Pair<Subspace<T>>
-    where
-        T: Construct + Count<U>
-{
-    fn count(&self, (a, b): (usize, U)) -> usize {
-        let subspace: T = Construct::new();
-        let data: Pair<Data> = Construct::new();
-        data.count(a) * subspace.count(b)
-    }
 }
 
 impl<T, U> Count<U> for Pair<Of<T>>
@@ -47,18 +35,6 @@ impl Zero<usize, (usize, usize)> for Pair<Data> {
 }
 
 impl<T, U, V>
-Zero<(usize, U), ((usize, usize), V)> for Pair<Subspace<T>>
-    where
-        T: Construct + Count<U> + Zero<U, V>,
-        U: Copy
-{
-    fn zero(&self, (_, dim): (usize, U)) -> ((usize, usize), V) {
-        let sub: T = Construct::new();
-        ((0, 0), sub.zero(dim))
-    }
-}
-
-impl<T, U, V>
 Zero<U, (V, V)> for Pair<Of<T>>
     where
         T: Construct + Zero<U, V>,
@@ -74,25 +50,6 @@ impl ToIndex<usize, (usize, usize)>
 for Pair<Data> {
     fn to_index(&self, _dim: usize, (min, max): (usize, usize)) -> usize {
         min + max * (max - 1) / 2
-    }
-}
-
-impl<T, U, V>
-ToIndex<(usize, U), ((usize, usize), V)>
-for Pair<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>,
-        U: Copy
-{
-    fn to_index(
-        &self,
-        (a, b): (usize, U),
-        (pa, pb): ((usize, usize), V)
-    ) -> usize {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: Pair<Data> = Construct::new();
-        data.to_index(a, pa) * count + subspace.to_index(b, pb)
     }
 }
 
@@ -120,27 +77,6 @@ impl ToPos<usize, (usize, usize)> for Pair<Data> {
         let max = ((-1f64 + (8f64 * index as f64 + 1f64).sqrt()) / 2f64) as usize + 1;
         let min = index.wrapping_sub(max * (max + 1) / 2).wrapping_add(max);
         *pos = (min, max)
-    }
-}
-
-impl<T, U, V>
-ToPos<(usize, U), ((usize, usize), V)> for Pair<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V>,
-        U: Copy
-{
-    fn to_pos(
-        &self,
-        (a, b): (usize, U),
-        index: usize,
-        &mut (ref mut head, ref mut tail): &mut ((usize, usize), V)
-    ) {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: Pair<Data> = Construct::new();
-        let x = index / count;
-        data.to_pos(a, x, head);
-        subspace.to_pos(b, index - x * count, tail)
     }
 }
 
@@ -174,15 +110,10 @@ mod tests {
     #[test]
     fn features() {
         is_complete::<Pair, usize, (usize, usize), (usize, usize)>();
-        is_complete::<Pair<Subspace<Pair>>, (usize, usize),
-            ((usize, usize), (usize, usize)),
-            ((usize, usize), (usize, usize))>();
         is_complete::<Pair<Of<Pair>>, usize,
             ((usize, usize), (usize, usize)),
             ((usize, usize), (usize, usize))>();
         does_zero::<Pair, usize, (usize, usize)>();
-        does_zero::<Pair<Subspace<Pair>>, (usize, usize),
-            ((usize, usize), (usize, usize))>();
         does_zero::<Pair<Of<Pair>>, usize,
             ((usize, usize), (usize, usize))>();
     }
@@ -199,19 +130,6 @@ mod tests {
         let mut new_pos = (0, 0);
         x.to_pos(dim, 3, &mut new_pos);
         assert_eq!(new_pos, (0, 3));
-    }
-
-    #[test]
-    fn subspace() {
-        let x: Pair<Subspace<Dimension>> = Construct::new();
-        let dim = (4, 3);
-        assert_eq!(x.count(dim), 18);
-        assert_eq!(x.to_index(dim, ((0, 1), 0)), 0);
-        assert_eq!(x.to_index(dim, ((0, 1), 1)), 1);
-        assert_eq!(x.to_index(dim, ((0, 2), 0)), 3);
-        let mut new_pos = ((0, 0), 0);
-        x.to_pos(dim, 3, &mut new_pos);
-        assert_eq!(new_pos, ((0, 2), 0));
     }
 
     #[test]

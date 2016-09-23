@@ -3,7 +3,6 @@ use std::marker::PhantomData;
 use Construct;
 use Data;
 use Count;
-use Subspace;
 use Of;
 use ToIndex;
 use ToPos;
@@ -26,18 +25,6 @@ impl<'a> Count<&'a [usize]> for DimensionN<Data> {
     }
 }
 
-impl<'a, T, U>
-Count<(&'a [usize], U)> for DimensionN<Subspace<T>>
-    where
-        T: Construct + Count<U>
-{
-    fn count(&self, (a, b): (&'a [usize], U)) -> usize {
-        let subspace: T = Construct::new();
-        let data: DimensionN<Data> = Construct::new();
-        data.count(a) * subspace.count(b)
-    }
-}
-
 impl<'a, T, U: Copy>
 Count<&'a [U]> for DimensionN<Of<T>>
     where
@@ -56,19 +43,6 @@ Count<&'a [U]> for DimensionN<Of<T>>
 impl<'a> Zero<&'a [usize], Vec<usize>> for DimensionN<Data> {
     fn zero(&self, dim: &'a [usize]) -> Vec<usize> {
         vec![0, dim.len()]
-    }
-}
-
-impl<'a, T, U: Copy, V>
-Zero<(&'a [usize], U), (Vec<usize>, V)>
-for DimensionN<Subspace<T>>
-    where
-        T: Construct + Count<U> + Zero<U, V>
-{
-    fn zero(&self, (n, dim): (&'a [usize], U)) -> (Vec<usize>, V) {
-        let sub: T = Construct::new();
-        let data: DimensionN<Data> = Construct::new();
-        (data.zero(n), sub.zero(dim))
     }
 }
 
@@ -96,23 +70,6 @@ impl<'a> ToIndex<&'a [usize], &'a [usize]> for DimensionN<Data> {
             dim_index = dim_index * dim[i] + pos[i];
         }
         dim_index
-    }
-}
-
-impl<'a, T, U: Copy, V>
-ToIndex<(&'a [usize], U), (&'a [usize], V)> for DimensionN<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>
-{
-    fn to_index(
-        &self,
-        (a, b): (&'a [usize], U),
-        (pa, pb): (&'a [usize], V)
-    ) -> usize {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: DimensionN<Data> = Construct::new();
-        data.to_index(a, pa) * count + subspace.to_index(b, pb)
     }
 }
 
@@ -154,27 +111,6 @@ impl<'a> ToPos<&'a [usize], Vec<usize>> for DimensionN<Data> {
 }
 
 impl<'a, T, U: Copy, V>
-ToPos<(&'a [usize], U), (Vec<usize>, V)>
-for DimensionN<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V>
-{
-    fn to_pos(
-        &self,
-        (a, b): (&'a [usize], U),
-        index: usize,
-        &mut (ref mut head, ref mut tail): &mut (Vec<usize>, V)
-    ) {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: DimensionN<Data> = Construct::new();
-        let x = index / count;
-        data.to_pos(a, index / count, head);
-        subspace.to_pos(b, index - x * count, tail)
-    }
-}
-
-impl<'a, T, U: Copy, V>
 ToPos<&'a [U], Vec<V>>
 for DimensionN<Of<T>>
     where
@@ -206,8 +142,6 @@ mod tests {
     fn features() {
         is_complete::<DimensionN, &[usize], &[usize], Vec<usize>>();
         does_zero::<DimensionN, &[usize], Vec<usize>>();
-        does_zero::<DimensionN<Subspace<Pair>>, (&[usize], usize),
-            (Vec<usize>, (usize, usize))>();
         does_zero::<DimensionN<Of<Pair>>, &[usize],
             Vec<(usize, usize)>>();
     }

@@ -1,13 +1,10 @@
-use std::marker::PhantomData;
+//! Implements traits for tuples such subspaces can be constructed.
 
 use Construct;
 use Count;
 use ToIndex;
 use ToPos;
 use Zero;
-
-/// Used to nest a subspace.
-pub struct Subspace<T>(PhantomData<T>);
 
 impl<T, U> Construct for (T, U)
     where T: Construct,

@@ -5,7 +5,6 @@ use Of;
 use ToPos;
 use Count;
 use Data;
-use Subspace;
 use ToIndex;
 use Zero;
 
@@ -22,17 +21,6 @@ impl Count<usize> for PowerSet<Data> {
     }
 }
 
-impl<T, U> Count<(usize, U)> for PowerSet<Subspace<T>>
-    where
-        T: Construct + Count<U>
-{
-    fn count(&self, (n, dim): (usize, U)) -> usize {
-        let sub: T = Construct::new();
-        let data: PowerSet<Data> = Construct::new();
-        data.count(n) * sub.count(dim)
-    }
-}
-
 impl<T, U> Count<U> for PowerSet<Of<T>>
     where
         T: Construct + Count<U>
@@ -46,16 +34,6 @@ impl<T, U> Count<U> for PowerSet<Of<T>>
 impl Zero<usize, Vec<usize>> for PowerSet<Data> {
     fn zero(&self, _dim: usize) -> Vec<usize> {
         vec![]
-    }
-}
-
-impl<T, U, V> Zero<(usize, U), (Vec<usize>, V)> for PowerSet<Subspace<T>>
-    where T: Construct + Zero<U, V>
-{
-    fn zero(&self, (n, dim): (usize, U)) -> (Vec<usize>, V) {
-        let sub: T = Construct::new();
-        let data: PowerSet<Data> = Construct::new();
-        (data.zero(n), sub.zero(dim))
     }
 }
 
@@ -80,20 +58,6 @@ impl<'a> ToIndex<usize, &'a [usize]> for PowerSet<Data> {
             index |= 1 << i;
         }
         index
-    }
-}
-
-impl<'a, T, U: Copy, V>
-ToIndex<(usize, U), (&'a [usize], V)>
-for PowerSet<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>
-{
-    fn to_index(&self, (a, b): (usize, U), (pa, pb): (&'a [usize], V)) -> usize {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: PowerSet<Data> = Construct::new();
-        data.to_index(a, pa) * count + subspace.to_index(b, pb)
     }
 }
 
@@ -132,27 +96,6 @@ impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
     }
 }
 
-impl<T, U: Copy, V>
-ToPos<(usize, U), (Vec<usize>, V)>
-for PowerSet<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V>
-{
-    fn to_pos(
-        &self,
-        (a, b): (usize, U),
-        index: usize,
-        &mut (ref mut head, ref mut tail): &mut (Vec<usize>, V)
-    ) {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: PowerSet<Data> = Construct::new();
-        let x = index / count;
-        data.to_pos(a, index / count, head);
-        subspace.to_pos(b, index - x * count, tail)
-    }
-}
-
 impl<T, U, V>
 ToPos<U, Vec<V>>
 for PowerSet<Of<T>>
@@ -187,12 +130,7 @@ mod tests {
     #[test]
     fn features() {
         is_complete::<PowerSet, usize, &[usize], Vec<usize>>();
-        is_complete::<PowerSet<Subspace<Pair>>, (usize, usize),
-            (&[usize], (usize, usize)),
-            (Vec<usize>, (usize, usize))>();
         does_zero::<PowerSet, usize, Vec<usize>>();
-        does_zero::<PowerSet<Subspace<Pair>>, (usize, usize),
-            (Vec<usize>, (usize, usize))>();
         does_zero::<PowerSet<Of<Pair>>, usize, Vec<(usize, usize)>>();
     }
 

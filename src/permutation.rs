@@ -6,7 +6,6 @@ use Construct;
 use Count;
 use Data;
 use Of;
-use Subspace;
 use ToPos;
 use ToIndex;
 use Zero;
@@ -30,18 +29,6 @@ impl Count<usize> for Permutation<Data> {
     }
 }
 
-impl<T, U>
-Count<(usize, U)> for Permutation<Subspace<T>>
-    where
-        T: Construct + Count<U>
-{
-    fn count(&self, (a, b): (usize, U)) -> usize {
-        let subspace: T = Construct::new();
-        let data: Permutation<Data> = Construct::new();
-        data.count(a) * subspace.count(b)
-    }
-}
-
 impl<T, U> Count<U> for Permutation<Of<T>>
     where
         T: Construct + Count<U>
@@ -59,18 +46,6 @@ impl<T, U> Count<U> for Permutation<Of<T>>
 impl Zero<usize, Vec<usize>> for Permutation<Data> {
     fn zero(&self, dim: usize) -> Vec<usize> {
         vec![0, dim]
-    }
-}
-
-impl<T, U: Copy, V> Zero<(usize, U), (Vec<usize>, V)>
-for Permutation<Subspace<T>>
-    where
-        T: Construct + Count<U> + Zero<U, V>
-{
-    fn zero(&self, (n, dim): (usize, U)) -> (Vec<usize>, V) {
-        let sub: T = Construct::new();
-        let data: Permutation<Data> = Construct::new();
-        (data.zero(n), sub.zero(dim))
     }
 }
 
@@ -96,20 +71,6 @@ impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
             count *= dim - i;
         }
         index
-    }
-}
-
-impl<'a, T, U: Copy, V>
-ToIndex<(usize, U), (&'a [usize], V)>
-for Permutation<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>
-{
-    fn to_index(&self, (a, b): (usize, U), (pa, pb): (&'a [usize], V)) -> usize {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: Permutation<Data> = Construct::new();
-        data.to_index(a, pa) * count + subspace.to_index(b, pb)
     }
 }
 
@@ -156,27 +117,6 @@ impl ToPos<usize, Vec<usize>> for Permutation<Data> {
     }
 }
 
-impl<T, U: Copy, V>
-ToPos<(usize, U), (Vec<usize>, V)>
-for Permutation<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V>
-{
-    fn to_pos(
-        &self,
-        (a, b): (usize, U),
-        index: usize,
-        &mut (ref mut head, ref mut tail): &mut (Vec<usize>, V)
-    ) {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: Permutation<Data> = Construct::new();
-        let x = index / count;
-        data.to_pos(a, index / count, head);
-        subspace.to_pos(b, index - x * count, tail)
-    }
-}
-
 impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
     where
         T: Construct + Count<U> + ToPos<U, V>,
@@ -214,15 +154,10 @@ mod test {
     #[test]
     fn features() {
         is_complete::<Permutation, usize, &[usize], Vec<usize>>();
-        is_complete::<Permutation<Subspace<Pair>>, (usize, usize),
-            (&[usize], (usize, usize)),
-            (Vec<usize>, (usize, usize))>();
         is_complete::<Permutation<Of<Pair>>, usize,
             &[(usize, usize)],
             Vec<(usize, usize)>>();
         does_zero::<Permutation, usize, Vec<usize>>();
-        does_zero::<Permutation<Subspace<Pair>>, (usize, usize),
-            (Vec<usize>, (usize, usize))>();
         does_zero::<Permutation<Of<Pair>>, usize,
             Vec<(usize, usize)>>();
     }

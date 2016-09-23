@@ -92,7 +92,6 @@ pub use neq_pair::NeqPair;
 pub use permutation::Permutation;
 pub use context::Context;
 pub use directed_context::DirectedContext;
-pub use subspace::Subspace;
 
 mod construct;
 mod count;

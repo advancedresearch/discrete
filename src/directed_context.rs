@@ -5,7 +5,6 @@ use Construct;
 use Data;
 use Count;
 use Of;
-use Subspace;
 use ToIndex;
 use ToPos;
 use Zero;
@@ -29,17 +28,6 @@ impl<'a> Count<&'a [usize]> for DirectedContext<Data> {
             prod *= d;
         }
         sum
-    }
-}
-
-impl<'a, T, U> Count<(&'a [usize], U)> for DirectedContext<Subspace<T>>
-    where
-        T: Construct + Count<U>
-{
-    fn count(&self, (n, dim): (&'a [usize], U)) -> usize {
-        let sub: T = Construct::new();
-        let data: DirectedContext<Data> = Construct::new();
-        data.count(n) * sub.count(dim)
     }
 }
 
@@ -67,19 +55,6 @@ impl<'a, T, U> Count<&'a [U]> for DirectedContext<Of<T>>
 impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data> {
     fn zero(&self, dim: &'a [usize]) -> (Vec<usize>, usize, usize) {
         (vec![0; dim.len()], 0, 0)
-    }
-}
-
-impl<'a, T, U: Copy, V>
-Zero<(&'a [usize], U), ((Vec<usize>, usize, usize), V)>
-for DirectedContext<Subspace<T>>
-    where
-        T: Construct + Count<U> + Zero<U, V>
-{
-    fn zero(&self, (n, dim): (&'a [usize], U)) -> ((Vec<usize>, usize, usize), V) {
-        let sub: T = Construct::new();
-        let data: DirectedContext<Data> = Construct::new();
-        (data.zero(n), sub.zero(dim))
     }
 }
 
@@ -111,25 +86,6 @@ impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for DirectedContext<D
         } else {
             2 * index
         }
-    }
-}
-
-impl<'a, T, U, V>
-ToIndex<((&'a [usize]), U), ((&'a [usize], usize, usize), V)>
-for DirectedContext<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>,
-        U: Copy
-{
-    fn to_index(
-        &self,
-        (my_dim, dim): (&'a [usize], U),
-        (my_pos, pos): ((&'a [usize], usize, usize), V)
-    ) -> usize {
-        let subspace: T = Construct::new();
-        let count = subspace.count(dim);
-        let data: DirectedContext<Data> = Construct::new();
-        data.to_index(my_dim, my_pos) * count + subspace.to_index(dim, pos)
     }
 }
 
@@ -179,27 +135,6 @@ impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data
     }
 }
 
-impl<'a, T, U: Copy, V>
-ToPos<(&'a [usize], U), ((Vec<usize>, usize, usize), V)>
-for DirectedContext<Subspace<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V>
-{
-    fn to_pos(
-        &self,
-        (a, b): (&'a [usize], U),
-        index: usize,
-        &mut (ref mut head, ref mut tail): &mut ((Vec<usize>, usize, usize), V)
-    ) {
-        let subspace: T = Construct::new();
-        let count = subspace.count(b);
-        let data: DirectedContext<Data> = Construct::new();
-        let x = index / count;
-        data.to_pos(a, index / count, head);
-        subspace.to_pos(b, index - x * count, tail)
-    }
-}
-
 impl<'a, T, U, V>
 ToPos<&'a [U], (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
@@ -235,21 +170,14 @@ mod tests {
     #[test]
     fn features() {
         does_count::<DirectedContext, &[usize]>();
-        does_count::<DirectedContext<Subspace<Pair>>, (&[usize], usize)>();
         does_count::<DirectedContext<Of<Pair>>, &[usize]>();
         does_to_index::<DirectedContext, &[usize], (&[usize], usize, usize)>();
-        does_to_index::<DirectedContext<Subspace<Pair>>, (&[usize], usize),
-            ((&[usize], usize, usize), (usize, usize))>();
         does_to_index::<DirectedContext<Of<Pair>>, &[usize],
             (&[(usize, usize)], usize, (usize, usize))>();
         does_to_pos::<DirectedContext, &[usize], (Vec<usize>, usize, usize)>();
-        does_to_pos::<DirectedContext<Subspace<Pair>>, (&[usize], usize),
-            ((Vec<usize>, usize, usize), (usize, usize))>();
         does_to_pos::<DirectedContext<Of<Pair>>, &[usize],
             (Vec<(usize, usize)>, usize, (usize, usize))>();
         does_zero::<DirectedContext, &[usize], (Vec<usize>, usize, usize)>();
-        does_zero::<DirectedContext<Subspace<Pair>>, (&[usize], usize),
-            ((Vec<usize>, usize, usize), (usize, usize))>();
         does_zero::<Context<Of<Pair>>, &[usize],
             (Vec<(usize, usize)>, usize, (usize, usize))>();
     }
