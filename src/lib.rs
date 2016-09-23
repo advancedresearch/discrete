@@ -92,6 +92,7 @@ pub use neq_pair::NeqPair;
 pub use permutation::Permutation;
 pub use context::Context;
 pub use directed_context::DirectedContext;
+pub use subspace::Subspace;
 
 mod construct;
 mod count;
@@ -107,12 +108,11 @@ mod neq_pair;
 mod permutation;
 mod context;
 mod directed_context;
+mod subspace;
 
 /// Used by the final subspace.
 #[derive(Copy, Clone)]
 pub struct Data;
-/// Used to nest a subspace.
-pub struct Subspace<T>(PhantomData<T>);
 /// Used to combine the dimensional and position types.
 pub struct Of<T>(PhantomData<T>);
 

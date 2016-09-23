@@ -21,6 +21,9 @@
         - [x] Subspace<T>
         - [x] Of<T>
     - [ ] DimensionN
+        - [x] Data
+        - [x] Subspace<T>
+        - [x] Of<T>
     - [ ] Context
         - [x] Data
         - [x] Subspace<T>
@@ -45,13 +48,14 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let dir: DirectedContext<Of<Pair>> = Construct::new();
-    let dim = &[3, 2];
+    let dir: (Dimension, Pair) = Construct::new();
+    let dim = (3, 4);
     let count = dir.count(dim);
     println!("count {}", count);
     let mut pos = dir.zero(dim);
     for i in 0..count {
         dir.to_pos(dim, i, &mut pos);
-        println!("{:?}", pos);
+        print!("{:?}", pos);
+        println!(" index {}", dir.to_index(dim, pos));
     }
 }
