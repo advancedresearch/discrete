@@ -49,14 +49,14 @@ Zero<U, (V, V)> for NeqPair<Of<T>>
 
 impl ToIndex<usize, (usize, usize)>
 for NeqPair<Data> {
-    fn to_index(&self, dim: usize, (a, b): (usize, usize)) -> usize {
+    fn to_index(&self, dim: usize, &(a, b): &(usize, usize)) -> usize {
         use Pair;
 
         let pair: Pair<Data> = Construct::new();
         if a < b {
-            pair.to_index(dim, (a, b)) * 2
+            pair.to_index(dim, &(a, b)) * 2
         } else {
-            pair.to_index(dim, (b, a)) * 2 + 1
+            pair.to_index(dim, &(b, a)) * 2 + 1
         }
     }
 }
@@ -70,13 +70,13 @@ ToIndex<U, (V, V)> for NeqPair<Of<T>>
     fn to_index(
         &self,
         dim: U,
-        (min, max): (V, V)
+        &(ref min, ref max): &(V, V)
     ) -> usize {
         let of: T = Construct::new();
         let data: NeqPair<Data> = Construct::new();
         let min = of.to_index(dim, min);
         let max = of.to_index(dim, max);
-        data.to_index(self.count(dim), (min, max))
+        data.to_index(self.count(dim), &(min, max))
     }
 }
 
@@ -139,13 +139,13 @@ mod tests {
         let x: NeqPair = Construct::new();
         let dim = 4;
         assert_eq!(x.count(dim), 12);
-        assert_eq!(x.to_index(dim, (0, 1)), 0);
-        assert_eq!(x.to_index(dim, (1, 0)), 1);
-        assert_eq!(x.to_index(dim, (0, 2)), 2);
-        assert_eq!(x.to_index(dim, (2, 0)), 3);
-        assert_eq!(x.to_index(dim, (1, 2)), 4);
-        assert_eq!(x.to_index(dim, (2, 1)), 5);
-        assert_eq!(x.to_index(dim, (0, 3)), 6);
+        assert_eq!(x.to_index(dim, &(0, 1)), 0);
+        assert_eq!(x.to_index(dim, &(1, 0)), 1);
+        assert_eq!(x.to_index(dim, &(0, 2)), 2);
+        assert_eq!(x.to_index(dim, &(2, 0)), 3);
+        assert_eq!(x.to_index(dim, &(1, 2)), 4);
+        assert_eq!(x.to_index(dim, &(2, 1)), 5);
+        assert_eq!(x.to_index(dim, &(0, 3)), 6);
         let mut new_pos = (0, 0);
         x.to_pos(dim, 6, &mut new_pos);
         assert_eq!(new_pos, (0, 3));
@@ -158,12 +158,12 @@ mod tests {
         let x: NeqPair<Of<DimensionN>> = Construct::new();
         let dim = [2, 2];
         assert_eq!(x.count(&dim), 12);
-        assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 0])), 0);
-        assert_eq!(x.to_index(&dim, (&[0, 0], &[0, 1])), 2);
-        assert_eq!(x.to_index(&dim, (&[1, 0], &[0, 1])), 4);
-        assert_eq!(x.to_index(&dim, (&[0, 0], &[1, 1])), 6);
-        assert_eq!(x.to_index(&dim, (&[1, 0], &[1, 1])), 8);
-        assert_eq!(x.to_index(&dim, (&[0, 1], &[1, 1])), 10);
+        assert_eq!(x.to_index(&dim, &(&[0, 0], &[1, 0])), 0);
+        assert_eq!(x.to_index(&dim, &(&[0, 0], &[0, 1])), 2);
+        assert_eq!(x.to_index(&dim, &(&[1, 0], &[0, 1])), 4);
+        assert_eq!(x.to_index(&dim, &(&[0, 0], &[1, 1])), 6);
+        assert_eq!(x.to_index(&dim, &(&[1, 0], &[1, 1])), 8);
+        assert_eq!(x.to_index(&dim, &(&[0, 1], &[1, 1])), 10);
         let mut pos = (Vec::new(), Vec::new());
         for i in 0..6 {
             x.to_pos(&dim, i, &mut pos);

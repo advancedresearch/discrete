@@ -45,7 +45,7 @@ impl<T, U, V, W, X, Y> ToIndex<(V, W), (X, Y)> for (T, U)
     fn to_index(
         &self,
         (dim_t, dim_u): (V, W),
-        (pt, pu): (X, Y)
+        &(ref pt, ref pu): &(X, Y)
     ) -> usize {
         let t: T = Construct::new();
         let u: U = Construct::new();

@@ -76,11 +76,14 @@ for DirectedContext<Of<T>>
 }
 
 impl<'a> ToIndex<&'a [usize], (&'a [usize], usize, usize)> for DirectedContext<Data> {
-    fn to_index(&self, dim: &'a [usize], (p, ind, b): (&'a [usize], usize, usize)) -> usize {
+    fn to_index(
+        &self, dim: &'a [usize],
+        &(p, ind, b): &(&'a [usize], usize, usize)
+    ) -> usize {
         use Context;
 
         let context: Context<Data> = Construct::new();
-        let index = context.to_index(dim, (p, ind, b));
+        let index = context.to_index(dim, &(p, ind, b));
         if p[ind] > b {
             2 * index + 1
         } else {
@@ -94,19 +97,19 @@ for DirectedContext<Of<T>>
     where
         T: Construct + Count<U> + ToIndex<U, V>,
         U: Copy,
-        V: Copy
+        V: Clone
 {
     fn to_index(
         &self,
         dim: &'a [U],
-        (p, ind, b): (&'a [V], usize, V)
+        &(p, ind, ref b): &(&'a [V], usize, V)
     ) -> usize {
         use Context;
 
         let of: T = Construct::new();
         let context: Context<Of<T>> = Construct::new();
-        let index = context.to_index(dim, (p, ind, b));
-        if of.to_index(dim[ind], p[ind]) > of.to_index(dim[ind], b) {
+        let index = context.to_index(dim, &(p, ind, b.clone()));
+        if of.to_index(dim[ind], &p[ind]) > of.to_index(dim[ind], b) {
             2 * index + 1
         } else {
             2 * index
@@ -188,13 +191,13 @@ mod tests {
         let dim = &[2, 2, 2];
         // 12 edges on a cube * 2 = 24 directed edges
         assert_eq!(x.count(dim), 24);
-        assert_eq!(x.to_index(dim, (&[0, 0, 0], 0, 1)), 0);
-        assert_eq!(x.to_index(dim, (&[1, 0, 0], 0, 0)), 1);
+        assert_eq!(x.to_index(dim, &(&[0, 0, 0], 0, 1)), 0);
+        assert_eq!(x.to_index(dim, &(&[1, 0, 0], 0, 0)), 1);
         for i in 0..x.count(dim) {
             let mut pos = (vec![], 0, 0);
             x.to_pos(dim, i, &mut pos);
             println!("{:?}", pos);
-            assert_eq!(x.to_index(dim, (&pos.0, pos.1, pos.2)), i);
+            assert_eq!(x.to_index(dim, &(&pos.0, pos.1, pos.2)), i);
         }
         // assert!(false);
     }

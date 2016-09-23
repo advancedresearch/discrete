@@ -64,7 +64,7 @@ for DimensionN<Of<T>>
 }
 
 impl<'a> ToIndex<&'a [usize], &'a [usize]> for DimensionN<Data> {
-    fn to_index(&self, dim: &'a [usize], pos: &'a [usize]) -> usize {
+    fn to_index(&self, dim: &'a [usize], pos: &&'a [usize]) -> usize {
         let mut dim_index = 0;
         for i in (0..dim.len()).rev() {
             dim_index = dim_index * dim[i] + pos[i];
@@ -81,13 +81,13 @@ ToIndex<&'a [U], &'a [V]> for DimensionN<Of<T>>
     fn to_index(
         &self,
         dim: &'a [U],
-        pos: &'a [V]
+        pos: &&'a [V]
     ) -> usize {
         let of: T = Construct::new();
         let mut dim_index = 0;
         for i in (0..dim.len()).rev() {
             dim_index = dim_index * of.count(dim[i])
-                      + of.to_index(dim[i], pos[i]);
+                      + of.to_index(dim[i], &pos[i]);
         }
         dim_index
     }
@@ -151,9 +151,9 @@ mod tests {
         let x: DimensionN = Construct::new();
         let dim = &[3, 3];
         assert_eq!(x.count(dim), 9);
-        assert_eq!(x.to_index(dim, &[0, 0]), 0);
-        assert_eq!(x.to_index(dim, &[1, 0]), 1);
-        assert_eq!(x.to_index(dim, &[0, 1]), 3);
+        assert_eq!(x.to_index(dim, &&*vec![0, 0]), 0);
+        assert_eq!(x.to_index(dim, &&*vec![1, 0]), 1);
+        assert_eq!(x.to_index(dim, &&*vec![0, 1]), 3);
         let mut new_pos = vec![0, 0];
         x.to_pos(dim, 3, &mut new_pos);
         assert_eq!(&new_pos, &[0, 1]);
@@ -164,10 +164,10 @@ mod tests {
         let x: DimensionN<Of<Pair>> = Construct::new();
         let dim = [3, 4];
         assert_eq!(x.count(&dim), 18);
-        assert_eq!(x.to_index(&dim, &[(0, 1), (0, 1)]), 0);
-        assert_eq!(x.to_index(&dim, &[(0, 2), (0, 1)]), 1);
-        assert_eq!(x.to_index(&dim, &[(1, 2), (0, 1)]), 2);
-        assert_eq!(x.to_index(&dim, &[(0, 1), (0, 2)]), 3);
+        assert_eq!(x.to_index(&dim, &&*vec![(0, 1), (0, 1)]), 0);
+        assert_eq!(x.to_index(&dim, &&*vec![(0, 2), (0, 1)]), 1);
+        assert_eq!(x.to_index(&dim, &&*vec![(1, 2), (0, 1)]), 2);
+        assert_eq!(x.to_index(&dim, &&*vec![(0, 1), (0, 2)]), 3);
         let mut pos = vec![(0, 0), (0, 0)];
         x.to_pos(&dim, 3, &mut pos);
         assert_eq!(pos[0], (0, 1));

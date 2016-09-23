@@ -58,7 +58,7 @@ fn main() {
             for m in 0..n {
                 b[m] = a[rot[k][m]];
             }
-            if x.to_index(dim, &b) < i { continue 'i; }
+            if x.to_index(dim, &&*b) < i { continue 'i; }
         }
 
         if count < 500 || counter % 100000 == 0 {

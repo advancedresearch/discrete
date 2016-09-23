@@ -56,6 +56,6 @@ fn main() {
     for i in 0..count {
         dir.to_pos(dim, i, &mut pos);
         print!("{:?}", pos);
-        println!(" index {}", dir.to_index(dim, pos));
+        println!(" index {}", dir.to_index(dim, &pos));
     }
 }

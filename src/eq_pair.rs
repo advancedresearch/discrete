@@ -49,7 +49,7 @@ Zero<U, (V, V)> for EqPair<Of<T>>
 
 impl ToIndex<usize, (usize, usize)>
 for EqPair<Data> {
-    fn to_index(&self, _dim: usize, (min, max): (usize, usize)) -> usize {
+    fn to_index(&self, _dim: usize, &(min, max): &(usize, usize)) -> usize {
         min + max * (max + 1) / 2
     }
 }
@@ -63,13 +63,13 @@ ToIndex<U, (V, V)> for EqPair<Of<T>>
     fn to_index(
         &self,
         dim: U,
-        (min, max): (V, V)
+        &(ref min, ref max): &(V, V)
     ) -> usize {
         let of: T = Construct::new();
         let data: EqPair<Data> = Construct::new();
         let min = of.to_index(dim, min);
         let max = of.to_index(dim, max);
-        data.to_index(self.count(dim), (min, max))
+        data.to_index(self.count(dim), &(min, max))
     }
 }
 
@@ -135,7 +135,7 @@ mod tests {
         for x in 0..count {
             eq_pair.to_pos(n, x, &mut pos);
             println!("{:?}", pos);
-            assert_eq!(eq_pair.to_index(n, pos), x);
+            assert_eq!(eq_pair.to_index(n, &pos), x);
         }
     }
 }

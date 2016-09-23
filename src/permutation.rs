@@ -62,7 +62,7 @@ impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
 }
 
 impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
-    fn to_index(&self, dim: usize, pos: &'a [usize]) -> usize {
+    fn to_index(&self, dim: usize, pos: &&'a [usize]) -> usize {
         let mut index = 0;
         let mut count = 1;
         for (i, &x) in pos.iter().enumerate().rev() {
@@ -78,16 +78,16 @@ impl<'a, T, U: Copy, V: Copy> ToIndex<U, &'a [V]> for Permutation<Of<T>>
     where
         T: Construct + ToIndex<U, V> + Count<U>
 {
-    fn to_index(&self, dim: U, pos: &'a [V]) -> usize {
+    fn to_index(&self, dim: U, pos: &&'a [V]) -> usize {
         let of: T = Construct::new();
         let mut index = 0;
         let dim_count = of.count(dim);
         let mut count = 1;
         for (i, x) in pos.iter()
-            .map(|&x| of.to_index(dim, x))
+            .map(|x| of.to_index(dim, x))
             .enumerate().rev() {
             let lower = pos[..i].iter()
-                .map(|&y| of.to_index(dim, y))
+                .map(|y| of.to_index(dim, y))
                 .filter(|&y| y < x).count();
             index += count * (x - lower);
             count *= dim_count - i;
@@ -175,7 +175,7 @@ mod test {
         let count = permutation.count(dim);
         for i in 0..count {
             permutation.to_pos(dim, i, &mut pos);
-            let index = permutation.to_index(dim, &pos);
+            let index = permutation.to_index(dim, &&pos[..]);
             assert_eq!(index, i);
         }
     }
@@ -188,7 +188,7 @@ mod test {
         let mut pos = Vec::new();
         for i in 0..count {
             space.to_pos(dim, i, &mut pos);
-            let index = space.to_index(dim, &pos);
+            let index = space.to_index(dim, &&pos[..]);
             assert_eq!(index, i);
         }
     }
