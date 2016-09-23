@@ -74,9 +74,11 @@ impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
     }
 }
 
-impl<T, U: Copy, V: Copy> ToIndex<U, Vec<V>> for Permutation<Of<T>>
+impl<T, U, V> ToIndex<U, Vec<V>> for Permutation<Of<T>>
     where
-        T: Construct + ToIndex<U, V> + Count<U>
+        T: Construct + ToIndex<U, V> + Count<U>,
+        U: Copy,
+        V: Clone
 {
     fn to_index(&self, dim: U, pos: &Vec<V>) -> usize {
         let of: T = Construct::new();

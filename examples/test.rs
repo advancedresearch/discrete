@@ -48,8 +48,8 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let dir: (Dimension, Pair) = Construct::new();
-    let dim = (3, 4);
+    let dir: Permutation<Of<Permutation>> = Construct::new();
+    let dim = 2;
     let count = dir.count(dim);
     println!("count {}", count);
     let mut pos = dir.zero(dim);
