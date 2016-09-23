@@ -54,7 +54,7 @@ use discrete::*;
 
 fn main() {
     let pair_of_powersets: EqPair<Of<PowerSet<Data>>> = Construct::new();
-    let n = 10;
+    let ref n = 10;
     let count = pair_of_powersets.count(n);
     println!("count {:?}", count);
     let mut pos: (Vec<usize>, Vec<usize>) = (Vec::new(), Vec::new());

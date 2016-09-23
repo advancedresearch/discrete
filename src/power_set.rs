@@ -16,8 +16,8 @@ impl<T> Construct for PowerSet<T> {
 }
 
 impl Count<usize> for PowerSet<Data> {
-    fn count(&self, dim: usize) -> usize {
-        1 << dim
+    fn count(&self, dim: &usize) -> usize {
+        1 << *dim
     }
 }
 
@@ -25,24 +25,22 @@ impl<T, U> Count<U> for PowerSet<Of<T>>
     where
         T: Construct + Count<U>
 {
-    fn count(&self, dim: U) -> usize {
+    fn count(&self, dim: &U) -> usize {
         let of: T = Construct::new();
         1 << of.count(dim)
     }
 }
 
 impl Zero<usize, Vec<usize>> for PowerSet<Data> {
-    fn zero(&self, _dim: usize) -> Vec<usize> {
+    fn zero(&self, _dim: &usize) -> Vec<usize> {
         vec![]
     }
 }
 
 impl<T, U, V> Zero<U, Vec<V>> for PowerSet<Of<T>>
-    where
-        T: Construct + Count<U> + Zero<U, V>,
-        U: Copy
+    where T: Construct + Count<U> + Zero<U, V>
 {
-    fn zero(&self, _dim: U) -> Vec<V> {
+    fn zero(&self, _dim: &U) -> Vec<V> {
         vec![]
     }
 }
@@ -50,7 +48,7 @@ impl<T, U, V> Zero<U, Vec<V>> for PowerSet<Of<T>>
 impl ToIndex<usize, Vec<usize>> for PowerSet<Data> {
     fn to_index(
         &self,
-        _dim: usize,
+        _dim: &usize,
         pos: &Vec<usize>
     ) -> usize {
         let mut index = 0;
@@ -65,12 +63,11 @@ impl<T, U, V>
 ToIndex<U, Vec<V>> for PowerSet<Of<T>>
     where
         T: Construct + ToIndex<U, V>,
-        U: Copy,
         V: Clone
 {
     fn to_index(
         &self,
-        dim: U,
+        dim: &U,
         pos: &Vec<V>
     ) -> usize {
         let of: T = Construct::new();
@@ -85,12 +82,12 @@ ToIndex<U, Vec<V>> for PowerSet<Of<T>>
 impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
     fn to_pos(
         &self,
-        dim: usize,
+        dim: &usize,
         index: usize,
         pos: &mut Vec<usize>
     ) {
         unsafe { pos.set_len(0); }
-        for i in 0..dim {
+        for i in 0..*dim {
             if ((index >> i) & 1) == 1 {
                 pos.push(i);
             }
@@ -101,13 +98,11 @@ impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
 impl<T, U, V>
 ToPos<U, Vec<V>>
 for PowerSet<Of<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
-        U: Copy
+    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
 {
     fn to_pos(
         &self,
-        dim: U,
+        dim: &U,
         index: usize,
         pos: &mut Vec<V>
     ) {
@@ -138,7 +133,7 @@ mod tests {
     #[test]
     fn data() {
         let x: PowerSet = Construct::new();
-        let dim = 6;
+        let ref dim = 6;
         assert_eq!(x.count(dim), 64);
         assert_eq!(x.to_index(dim, &vec![]), 0);
         assert_eq!(x.to_index(dim, &vec![0]), 1);
@@ -152,7 +147,7 @@ mod tests {
     #[test]
     fn of() {
         let x: PowerSet<Of<Pair>> = Construct::new();
-        let dim = 4;
+        let ref dim = 4;
         assert_eq!(x.count(dim), 64);
         assert_eq!(x.to_index(dim, &vec![]), 0);
         assert_eq!(x.to_index(dim, &vec![(0, 1)]), 1);

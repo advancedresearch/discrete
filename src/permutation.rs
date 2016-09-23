@@ -20,7 +20,7 @@ impl<T> Construct for Permutation<T> {
 }
 
 impl Count<usize> for Permutation<Data> {
-    fn count(&self, dim: usize) -> usize {
+    fn count(&self, dim: &usize) -> usize {
         let mut res = 1;
         for x in 1..dim + 1 {
             res *= x;
@@ -33,7 +33,7 @@ impl<T, U> Count<U> for Permutation<Of<T>>
     where
         T: Construct + Count<U>
 {
-    fn count(&self, dim: U) -> usize {
+    fn count(&self, dim: &U) -> usize {
         let of: T = Construct::new();
         let mut res = 1;
         for x in 1..of.count(dim) + 1 {
@@ -44,25 +44,24 @@ impl<T, U> Count<U> for Permutation<Of<T>>
 }
 
 impl Zero<usize, Vec<usize>> for Permutation<Data> {
-    fn zero(&self, dim: usize) -> Vec<usize> {
-        vec![0, dim]
+    fn zero(&self, dim: &usize) -> Vec<usize> {
+        vec![0; *dim]
     }
 }
 
 impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
     where
         T: Construct + Count<U> + Zero<U, V>,
-        U: Copy,
         V: Default + Clone
 {
-    fn zero(&self, dim: U) -> Vec<V> {
+    fn zero(&self, dim: &U) -> Vec<V> {
         let of: T = Construct::new();
         vec![of.zero(dim); of.count(dim)]
     }
 }
 
 impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
-    fn to_index(&self, dim: usize, pos: &Vec<usize>) -> usize {
+    fn to_index(&self, dim: &usize, pos: &Vec<usize>) -> usize {
         let mut index = 0;
         let mut count = 1;
         for (i, &x) in pos.iter().enumerate().rev() {
@@ -77,10 +76,9 @@ impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
 impl<T, U, V> ToIndex<U, Vec<V>> for Permutation<Of<T>>
     where
         T: Construct + ToIndex<U, V> + Count<U>,
-        U: Copy,
         V: Clone
 {
-    fn to_index(&self, dim: U, pos: &Vec<V>) -> usize {
+    fn to_index(&self, dim: &U, pos: &Vec<V>) -> usize {
         let of: T = Construct::new();
         let mut index = 0;
         let dim_count = of.count(dim);
@@ -99,7 +97,7 @@ impl<T, U, V> ToIndex<U, Vec<V>> for Permutation<Of<T>>
 }
 
 impl ToPos<usize, Vec<usize>> for Permutation<Data> {
-    fn to_pos(&self, dim: usize, mut index: usize, pos: &mut Vec<usize>) {
+    fn to_pos(&self, dim: &usize, mut index: usize, pos: &mut Vec<usize>) {
         unsafe { pos.set_len(0); }
 
         let mut count = 1;
@@ -108,7 +106,7 @@ impl ToPos<usize, Vec<usize>> for Permutation<Data> {
             pos.push(j);
         }
 
-        for i in 0..dim {
+        for i in 0..*dim {
             let block = count / (dim - i);
             let ind = index / block;
             let item = pos.remove(ind);
@@ -122,10 +120,9 @@ impl ToPos<usize, Vec<usize>> for Permutation<Data> {
 impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
     where
         T: Construct + Count<U> + ToPos<U, V>,
-        U: Copy,
         V: Default
 {
-    fn to_pos(&self, dim: U, mut index: usize, pos: &mut Vec<V>) {
+    fn to_pos(&self, dim: &U, mut index: usize, pos: &mut Vec<V>) {
         let of: T = Construct::new();
         let of_count = of.count(dim);
         pos.clear();
@@ -162,13 +159,13 @@ mod test {
     #[test]
     fn data() {
         let permutation: Permutation = Construct::new();
-        assert_eq!(permutation.count(1), 1);
-        assert_eq!(permutation.count(2), 2);
-        assert_eq!(permutation.count(3), 6);
-        assert_eq!(permutation.count(4), 24);
+        assert_eq!(permutation.count(&1), 1);
+        assert_eq!(permutation.count(&2), 2);
+        assert_eq!(permutation.count(&3), 6);
+        assert_eq!(permutation.count(&4), 24);
 
         let mut pos = Vec::new();
-        let dim = 4;
+        let ref dim = 4;
         let count = permutation.count(dim);
         for i in 0..count {
             permutation.to_pos(dim, i, &mut pos);
@@ -180,7 +177,7 @@ mod test {
     #[test]
     fn of() {
         let space: Permutation<Of<Pair>> = Construct::new();
-        let dim = 3;
+        let ref dim = 3;
         let count = space.count(dim);
         let mut pos = Vec::new();
         for i in 0..count {

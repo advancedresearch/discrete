@@ -19,7 +19,7 @@ impl<T, U, V, W> Count<(V, W)> for (T, U)
     where T: Construct + Count<V>,
           U: Construct + Count<W>
 {
-    fn count(&self, (dim_t, dim_u): (V, W)) -> usize {
+    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> usize {
         let t: T = Construct::new();
         let u: U = Construct::new();
         t.count(dim_t) * u.count(dim_u)
@@ -30,7 +30,7 @@ impl<T, U, V, W, X, Y> Zero<(V, W), (X, Y)> for (T, U)
     where T: Construct + Zero<V, X>,
           U: Construct + Zero<W, Y>
 {
-    fn zero(&self, (dim_t, dim_u): (V, W)) -> (X, Y) {
+    fn zero(&self, &(ref dim_t, ref dim_u): &(V, W)) -> (X, Y) {
         let t: T = Construct::new();
         let u: U = Construct::new();
         (t.zero(dim_t), u.zero(dim_u))
@@ -39,12 +39,11 @@ impl<T, U, V, W, X, Y> Zero<(V, W), (X, Y)> for (T, U)
 
 impl<T, U, V, W, X, Y> ToIndex<(V, W), (X, Y)> for (T, U)
     where T: Construct + ToIndex<V, X>,
-          U: Construct + Count<W> + ToIndex<W, Y>,
-          W: Copy
+          U: Construct + Count<W> + ToIndex<W, Y>
 {
     fn to_index(
         &self,
-        (dim_t, dim_u): (V, W),
+        &(ref dim_t, ref dim_u): &(V, W),
         &(ref pt, ref pu): &(X, Y)
     ) -> usize {
         let t: T = Construct::new();
@@ -56,12 +55,11 @@ impl<T, U, V, W, X, Y> ToIndex<(V, W), (X, Y)> for (T, U)
 
 impl<T, U, V, W, X, Y> ToPos<(V, W), (X, Y)> for (T, U)
     where T: Construct + ToPos<V, X>,
-          U: Construct + Count<W> + ToPos<W, Y>,
-          W: Copy
+          U: Construct + Count<W> + ToPos<W, Y>
 {
     fn to_pos(
         &self,
-        (dim_t, dim_u): (V, W),
+        &(ref dim_t, ref dim_u): &(V, W),
         ind: usize,
         &mut (ref mut pt, ref mut pu): &mut (X, Y)
     ) {

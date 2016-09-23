@@ -16,51 +16,48 @@ impl<T> Construct for Dimension<T> {
 }
 
 impl Count<usize> for Dimension<Data> {
-    fn count(&self, dim: usize) -> usize { dim }
+    fn count(&self, dim: &usize) -> usize { *dim }
 }
 
 impl<T, U> Count<U> for Dimension<Of<T>>
-    where
-        T: Construct + Count<U>
+    where T: Construct + Count<U>
 {
-    fn count(&self, dim: U) -> usize {
+    fn count(&self, dim: &U) -> usize {
         let of: T = Construct::new();
         of.count(dim)
     }
 }
 
 impl Zero<usize, usize> for Dimension<Data> {
-    fn zero(&self, _dim: usize) -> usize { 0 }
+    fn zero(&self, _dim: &usize) -> usize { 0 }
 }
 
 impl<T, U, V>
 Zero<U, V> for Dimension<Of<T>>
-    where
-        T: Construct + Zero<U, V>,
-        U: Copy
+    where T: Construct + Zero<U, V>
 {
-    fn zero(&self, dim: U) -> V {
+    fn zero(&self, dim: &U) -> V {
         let of: T = Construct::new();
         of.zero(dim)
     }
 }
 
 impl ToIndex<usize, usize> for Dimension<Data> {
-    fn to_index(&self, _dim: usize, pos: &usize) -> usize { *pos }
+    fn to_index(&self, _dim: &usize, pos: &usize) -> usize { *pos }
 }
 
 impl<T, U, V> ToIndex<U, V> for Dimension<Of<T>>
     where
         T: Construct + ToIndex<U, V>
 {
-    fn to_index(&self, dim: U, pos: &V) -> usize {
+    fn to_index(&self, dim: &U, pos: &V) -> usize {
         let of: T = Construct::new();
         of.to_index(dim, pos)
     }
 }
 
 impl ToPos<usize, usize> for Dimension<Data> {
-    fn to_pos(&self, _dim: usize, index: usize, pos: &mut usize) {
+    fn to_pos(&self, _dim: &usize, index: usize, pos: &mut usize) {
         *pos = index;
     }
 }
@@ -69,7 +66,7 @@ impl<T, U, V> ToPos<U, V> for Dimension<Of<T>>
     where
         T: Construct + ToPos<U, V>
 {
-    fn to_pos(&self, dim: U, index: usize, pos: &mut V) {
+    fn to_pos(&self, dim: &U, index: usize, pos: &mut V) {
         let of: T = Construct::new();
         of.to_pos(dim, index, pos);
     }

@@ -53,7 +53,7 @@ use discrete::{ Count, Construct, Pair, Of, Data, ToPos };
 
 fn main() {
     let pair_of_pairs: Pair<Of<Pair<Data>>> = Construct::new();
-    let n = 150;
+    let ref n = 150;
     let count = pair_of_pairs.count(n);
     println!("count {:?}", count);
     let mut pos: ((usize, usize), (usize, usize)) = ((0, 0), (0, 0));

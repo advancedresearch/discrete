@@ -46,7 +46,7 @@ fn main() {
         .unwrap_or(3);
     println!("n {}, base {}", n, base);
     let rot = gen_rotation_map(n);
-    let dim = &*vec![base; n];
+    let ref dim = vec![base; n];
     let count = x.count(dim);
     let mut a = vec![0; n];
     let mut b = vec![0; n];

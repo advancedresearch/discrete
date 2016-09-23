@@ -15,8 +15,8 @@ impl<T> Construct for DimensionN<T> {
     fn new() -> DimensionN<T> { DimensionN(PhantomData) }
 }
 
-impl<'a> Count<&'a [usize]> for DimensionN<Data> {
-    fn count(&self, dim: &'a [usize]) -> usize {
+impl Count<Vec<usize>> for DimensionN<Data> {
+    fn count(&self, dim: &Vec<usize>) -> usize {
         let mut prod = 1;
         for i in 0..dim.len() {
             prod *= dim[i];
@@ -25,46 +25,44 @@ impl<'a> Count<&'a [usize]> for DimensionN<Data> {
     }
 }
 
-impl<'a, T, U: Copy>
-Count<&'a [U]> for DimensionN<Of<T>>
+impl<T, U>
+Count<Vec<U>> for DimensionN<Of<T>>
     where
         T: Construct + Count<U>
 {
-    fn count(&self, dim: &'a [U]) -> usize {
+    fn count(&self, dim: &Vec<U>) -> usize {
         let of: T = Construct::new();
         let mut prod = 1;
         for i in 0..dim.len() {
-            prod *= of.count(dim[i]);
+            prod *= of.count(&dim[i]);
         }
         prod
     }
 }
 
-impl<'a> Zero<&'a [usize], Vec<usize>> for DimensionN<Data> {
-    fn zero(&self, dim: &'a [usize]) -> Vec<usize> {
+impl Zero<Vec<usize>, Vec<usize>> for DimensionN<Data> {
+    fn zero(&self, dim: &Vec<usize>) -> Vec<usize> {
         vec![0, dim.len()]
     }
 }
 
-impl<'a, T, U, V>
-Zero<&'a [U], Vec<V>>
+impl<T, U, V>
+Zero<Vec<U>, Vec<V>>
 for DimensionN<Of<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
-        U: Copy
+    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
 {
-    fn zero(&self, dim: &'a [U]) -> Vec<V> {
+    fn zero(&self, dim: &Vec<U>) -> Vec<V> {
         let of: T = Construct::new();
         let mut v = Vec::with_capacity(dim.len());
         for i in 0..dim.len() {
-            v.push(of.zero(dim[i]));
+            v.push(of.zero(&dim[i]));
         }
         v
     }
 }
 
-impl<'a> ToIndex<&'a [usize], Vec<usize>> for DimensionN<Data> {
-    fn to_index(&self, dim: &'a [usize], pos: &Vec<usize>) -> usize {
+impl ToIndex<Vec<usize>, Vec<usize>> for DimensionN<Data> {
+    fn to_index(&self, dim: &Vec<usize>, pos: &Vec<usize>) -> usize {
         let mut dim_index = 0;
         for i in (0..dim.len()).rev() {
             dim_index = dim_index * dim[i] + pos[i];
@@ -73,28 +71,27 @@ impl<'a> ToIndex<&'a [usize], Vec<usize>> for DimensionN<Data> {
     }
 }
 
-impl<'a, T, U: Copy, V: Copy>
-ToIndex<&'a [U], Vec<V>> for DimensionN<Of<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>
+impl<T, U, V>
+ToIndex<Vec<U>, Vec<V>> for DimensionN<Of<T>>
+    where T: Construct + Count<U> + ToIndex<U, V>
 {
     fn to_index(
         &self,
-        dim: &'a [U],
+        dim: &Vec<U>,
         pos: &Vec<V>
     ) -> usize {
         let of: T = Construct::new();
         let mut dim_index = 0;
         for i in (0..dim.len()).rev() {
-            dim_index = dim_index * of.count(dim[i])
-                      + of.to_index(dim[i], &pos[i]);
+            dim_index = dim_index * of.count(&dim[i])
+                      + of.to_index(&dim[i], &pos[i]);
         }
         dim_index
     }
 }
 
-impl<'a> ToPos<&'a [usize], Vec<usize>> for DimensionN<Data> {
-    fn to_pos(&self, dim: &'a [usize], index: usize, pos: &mut Vec<usize>) {
+impl ToPos<Vec<usize>, Vec<usize>> for DimensionN<Data> {
+    fn to_pos(&self, dim: &Vec<usize>, index: usize, pos: &mut Vec<usize>) {
         unsafe { pos.set_len(0); }
         let mut prod = self.count(dim);
         for _ in 0..dim.len() {
@@ -110,15 +107,14 @@ impl<'a> ToPos<&'a [usize], Vec<usize>> for DimensionN<Data> {
     }
 }
 
-impl<'a, T, U: Copy, V>
-ToPos<&'a [U], Vec<V>>
+impl<T, U, V>
+ToPos<Vec<U>, Vec<V>>
 for DimensionN<Of<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V>
+    where T: Construct + Count<U> + ToPos<U, V>
 {
     fn to_pos(
         &self,
-        dim: &'a [U],
+        dim: &Vec<U>,
         index: usize,
         pos: &mut Vec<V>
     ) {
@@ -126,9 +122,9 @@ for DimensionN<Of<T>>
         let mut prod = self.count(dim);
         let mut dim_index = index;
         for (i, p) in pos.iter_mut().enumerate().rev() {
-            prod /= of.count(dim[i]);
+            prod /= of.count(&dim[i]);
             let p_i = dim_index / prod;
-            of.to_pos(dim[i], p_i, p);
+            of.to_pos(&dim[i], p_i, p);
             dim_index -= p_i * prod;
         }
     }
@@ -140,13 +136,15 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<DimensionN, &[usize], Vec<usize>>();
+        is_complete::<DimensionN, Vec<usize>, Vec<usize>>();
+        is_complete::<DimensionN<Of<Pair>>, Vec<usize>,
+            Vec<(usize, usize)>>();
     }
 
     #[test]
     fn data() {
         let x: DimensionN = Construct::new();
-        let dim = &[3, 3];
+        let ref dim = vec![3, 3];
         assert_eq!(x.count(dim), 9);
         assert_eq!(x.to_index(dim, &vec![0, 0]), 0);
         assert_eq!(x.to_index(dim, &vec![1, 0]), 1);
@@ -159,14 +157,14 @@ mod tests {
     #[test]
     fn of() {
         let x: DimensionN<Of<Pair>> = Construct::new();
-        let dim = [3, 4];
-        assert_eq!(x.count(&dim), 18);
-        assert_eq!(x.to_index(&dim, &vec![(0, 1), (0, 1)]), 0);
-        assert_eq!(x.to_index(&dim, &vec![(0, 2), (0, 1)]), 1);
-        assert_eq!(x.to_index(&dim, &vec![(1, 2), (0, 1)]), 2);
-        assert_eq!(x.to_index(&dim, &vec![(0, 1), (0, 2)]), 3);
+        let ref dim = vec![3, 4];
+        assert_eq!(x.count(dim), 18);
+        assert_eq!(x.to_index(dim, &vec![(0, 1), (0, 1)]), 0);
+        assert_eq!(x.to_index(dim, &vec![(0, 2), (0, 1)]), 1);
+        assert_eq!(x.to_index(dim, &vec![(1, 2), (0, 1)]), 2);
+        assert_eq!(x.to_index(dim, &vec![(0, 1), (0, 2)]), 3);
         let mut pos = vec![(0, 0), (0, 0)];
-        x.to_pos(&dim, 3, &mut pos);
+        x.to_pos(dim, 3, &mut pos);
         assert_eq!(pos[0], (0, 1));
         assert_eq!(pos[1], (0, 2));
     }

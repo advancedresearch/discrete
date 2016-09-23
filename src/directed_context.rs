@@ -16,68 +16,64 @@ impl<T> Construct for DirectedContext<T> {
     fn new() -> DirectedContext<T> { DirectedContext(PhantomData) }
 }
 
-impl<'a> Count<&'a [usize]> for DirectedContext<Data> {
-    fn count(&self, dim: &'a [usize]) -> usize {
+impl Count<Vec<usize>> for DirectedContext<Data> {
+    fn count(&self, dim: &Vec<usize>) -> usize {
         use NeqPair;
 
         let pair: NeqPair<Data> = Construct::new();
-        let mut sum = pair.count(dim[0]);
+        let mut sum = pair.count(&dim[0]);
         let mut prod = dim[0];
-        for &d in &dim[1..] {
+        for d in &dim[1..] {
             sum = d * sum + pair.count(d) * prod;
-            prod *= d;
+            prod *= *d;
         }
         sum
     }
 }
 
-impl<'a, T, U> Count<&'a [U]> for DirectedContext<Of<T>>
-    where
-        T: Construct + Count<U>,
-        U: Copy
+impl<T, U> Count<Vec<U>> for DirectedContext<Of<T>>
+    where T: Construct + Count<U>
 {
-    fn count(&self, dim: &'a [U]) -> usize {
+    fn count(&self, dim: &Vec<U>) -> usize {
         use NeqPair;
 
         let of: T = Construct::new();
         let pair: NeqPair<Data> = Construct::new();
-        let mut sum = pair.count(of.count(dim[0]));
-        let mut prod = of.count(dim[0]);
-        for &d in &dim[1..] {
+        let mut sum = pair.count(&of.count(&dim[0]));
+        let mut prod = of.count(&dim[0]);
+        for d in &dim[1..] {
             let d = of.count(d);
-            sum = d * sum + pair.count(d) * prod;
+            sum = d * sum + pair.count(&d) * prod;
             prod *= d;
         }
         sum
     }
 }
 
-impl<'a> Zero<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data> {
-    fn zero(&self, dim: &'a [usize]) -> (Vec<usize>, usize, usize) {
+impl Zero<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
+    fn zero(&self, dim: &Vec<usize>) -> (Vec<usize>, usize, usize) {
         (vec![0; dim.len()], 0, 0)
     }
 }
 
-impl<'a, T, U, V>
-Zero<&'a [U], (Vec<V>, usize, V)>
+impl<T, U, V>
+Zero<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
-        U: Copy
+    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
 {
-    fn zero(&self, dim: &'a [U]) -> (Vec<V>, usize, V) {
+    fn zero(&self, dim: &Vec<U>) -> (Vec<V>, usize, V) {
         let of: T = Construct::new();
         let mut v = Vec::with_capacity(dim.len());
         for i in 0..dim.len() {
-            v.push(of.zero(dim[i]));
+            v.push(of.zero(&dim[i]));
         }
-        (v, 0, of.zero(dim[0]))
+        (v, 0, of.zero(&dim[0]))
     }
 }
 
-impl<'a> ToIndex<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data> {
+impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
     fn to_index(
-        &self, dim: &'a [usize],
+        &self, dim: &Vec<usize>,
         &(ref p, ind, b): &(Vec<usize>, usize, usize)
     ) -> usize {
         use Context;
@@ -92,16 +88,14 @@ impl<'a> ToIndex<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Da
     }
 }
 
-impl<'a, T, U, V> ToIndex<&'a [U], (Vec<V>, usize, V)>
+impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where
-        T: Construct + Count<U> + ToIndex<U, V>,
-        U: Copy,
-        V: Clone
+    where T: Construct + Count<U> + ToIndex<U, V>,
+          V: Clone
 {
     fn to_index(
         &self,
-        dim: &'a [U],
+        dim: &Vec<U>,
         &(ref p, ind, ref b): &(Vec<V>, usize, V)
     ) -> usize {
         use Context;
@@ -109,7 +103,7 @@ for DirectedContext<Of<T>>
         let of: T = Construct::new();
         let context: Context<Of<T>> = Construct::new();
         let index = context.to_index(dim, &(p.clone(), ind, b.clone()));
-        if of.to_index(dim[ind], &p[ind]) > of.to_index(dim[ind], b) {
+        if of.to_index(&dim[ind], &p[ind]) > of.to_index(&dim[ind], b) {
             2 * index + 1
         } else {
             2 * index
@@ -117,10 +111,10 @@ for DirectedContext<Of<T>>
     }
 }
 
-impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data> {
+impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
     fn to_pos(
         &self,
-        dim: &'a [usize],
+        dim: &Vec<usize>,
         index: usize,
         pos: &mut (Vec<usize>, usize, usize)
     ) {
@@ -138,17 +132,15 @@ impl<'a> ToPos<&'a [usize], (Vec<usize>, usize, usize)> for DirectedContext<Data
     }
 }
 
-impl<'a, T, U, V>
-ToPos<&'a [U], (Vec<V>, usize, V)>
+impl<T, U, V>
+ToPos<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
-        U: Copy,
-        V: Copy
+    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
+          V: Clone
 {
     fn to_pos(
         &self,
-        dim: &'a [U],
+        dim: &Vec<U>,
         index: usize,
         pos: &mut (Vec<V>, usize, V)
     ) {
@@ -159,8 +151,8 @@ for DirectedContext<Of<T>>
             context.to_pos(dim, index / 2, pos);
         } else {
             context.to_pos(dim, (index - 1) / 2, pos);
-            let tmp = pos.0[pos.1];
-            pos.0[pos.1] = pos.2;
+            let tmp = pos.0[pos.1].clone();
+            pos.0[pos.1] = pos.2.clone();
             pos.2 = tmp;
         }
     }
@@ -172,15 +164,15 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<DirectedContext, &[usize], (Vec<usize>, usize, usize)>();
-        is_complete::<DirectedContext<Of<Pair>>, &[usize],
+        is_complete::<DirectedContext, Vec<usize>, (Vec<usize>, usize, usize)>();
+        is_complete::<DirectedContext<Of<Pair>>, Vec<usize>,
             (Vec<(usize, usize)>, usize, (usize, usize))>();
     }
 
     #[test]
     fn data() {
         let x: DirectedContext = Construct::new();
-        let dim = &[2, 2, 2];
+        let ref dim = vec![2, 2, 2];
         // 12 edges on a cube * 2 = 24 directed edges
         assert_eq!(x.count(dim), 24);
         assert_eq!(x.to_index(dim, &(vec![0, 0, 0], 0, 1)), 0);

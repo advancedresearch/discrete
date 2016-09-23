@@ -48,8 +48,8 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let dir: PowerSet<Of<Permutation>> = Construct::new();
-    let dim = 2;
+    let dir: Context<Of<Context>> = Construct::new();
+    let ref dim = vec![vec![2, 2], vec![2, 2]];
     let count = dir.count(dim);
     let mut pos = dir.zero(dim);
     for i in 0..count {
