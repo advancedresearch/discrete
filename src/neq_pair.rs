@@ -125,9 +125,8 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<NeqPair, usize, (usize, usize), (usize, usize)>();
+        is_complete::<NeqPair, usize, (usize, usize)>();
         is_complete::<NeqPair<Of<NeqPair>>, usize,
-            ((usize, usize), (usize, usize)),
             ((usize, usize), (usize, usize))>();
         does_zero::<NeqPair, usize, (usize, usize)>();
         does_zero::<NeqPair<Of<NeqPair>>, usize,
@@ -158,12 +157,12 @@ mod tests {
         let x: NeqPair<Of<DimensionN>> = Construct::new();
         let dim = [2, 2];
         assert_eq!(x.count(&dim), 12);
-        assert_eq!(x.to_index(&dim, &(&[0, 0], &[1, 0])), 0);
-        assert_eq!(x.to_index(&dim, &(&[0, 0], &[0, 1])), 2);
-        assert_eq!(x.to_index(&dim, &(&[1, 0], &[0, 1])), 4);
-        assert_eq!(x.to_index(&dim, &(&[0, 0], &[1, 1])), 6);
-        assert_eq!(x.to_index(&dim, &(&[1, 0], &[1, 1])), 8);
-        assert_eq!(x.to_index(&dim, &(&[0, 1], &[1, 1])), 10);
+        assert_eq!(x.to_index(&dim, &(vec![0, 0], vec![1, 0])), 0);
+        assert_eq!(x.to_index(&dim, &(vec![0, 0], vec![0, 1])), 2);
+        assert_eq!(x.to_index(&dim, &(vec![1, 0], vec![0, 1])), 4);
+        assert_eq!(x.to_index(&dim, &(vec![0, 0], vec![1, 1])), 6);
+        assert_eq!(x.to_index(&dim, &(vec![1, 0], vec![1, 1])), 8);
+        assert_eq!(x.to_index(&dim, &(vec![0, 1], vec![1, 1])), 10);
         let mut pos = (Vec::new(), Vec::new());
         for i in 0..6 {
             x.to_pos(&dim, i, &mut pos);

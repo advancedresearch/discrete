@@ -141,14 +141,13 @@ pub fn does_to_pos<T, U, V>()
 
 // T - discrete space
 // U - dimension
-// V - Read position
-// W - Write position
+// V - Position
 #[cfg(test)]
-pub fn is_complete<T, U, V, W>()
+pub fn is_complete<T, U, V>()
     where
-        T: Count<U> + ToIndex<U, V> + ToPos<U, W>
+        T: Count<U> + ToIndex<U, V> + ToPos<U, V>
 {
     does_count::<T, U>();
     does_to_index::<T, U, V>();
-    does_to_pos::<T, U, W>();
+    does_to_pos::<T, U, V>();
 }

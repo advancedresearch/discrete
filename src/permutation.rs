@@ -61,8 +61,8 @@ impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
     }
 }
 
-impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
-    fn to_index(&self, dim: usize, pos: &&'a [usize]) -> usize {
+impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
+    fn to_index(&self, dim: usize, pos: &Vec<usize>) -> usize {
         let mut index = 0;
         let mut count = 1;
         for (i, &x) in pos.iter().enumerate().rev() {
@@ -74,11 +74,11 @@ impl<'a> ToIndex<usize, &'a [usize]> for Permutation<Data> {
     }
 }
 
-impl<'a, T, U: Copy, V: Copy> ToIndex<U, &'a [V]> for Permutation<Of<T>>
+impl<T, U: Copy, V: Copy> ToIndex<U, Vec<V>> for Permutation<Of<T>>
     where
         T: Construct + ToIndex<U, V> + Count<U>
 {
-    fn to_index(&self, dim: U, pos: &&'a [V]) -> usize {
+    fn to_index(&self, dim: U, pos: &Vec<V>) -> usize {
         let of: T = Construct::new();
         let mut index = 0;
         let dim_count = of.count(dim);
@@ -153,9 +153,8 @@ mod test {
 
     #[test]
     fn features() {
-        is_complete::<Permutation, usize, &[usize], Vec<usize>>();
+        is_complete::<Permutation, usize, Vec<usize>>();
         is_complete::<Permutation<Of<Pair>>, usize,
-            &[(usize, usize)],
             Vec<(usize, usize)>>();
         does_zero::<Permutation, usize, Vec<usize>>();
         does_zero::<Permutation<Of<Pair>>, usize,
@@ -175,7 +174,7 @@ mod test {
         let count = permutation.count(dim);
         for i in 0..count {
             permutation.to_pos(dim, i, &mut pos);
-            let index = permutation.to_index(dim, &&pos[..]);
+            let index = permutation.to_index(dim, &pos);
             assert_eq!(index, i);
         }
     }
@@ -188,7 +187,7 @@ mod test {
         let mut pos = Vec::new();
         for i in 0..count {
             space.to_pos(dim, i, &mut pos);
-            let index = space.to_index(dim, &&pos[..]);
+            let index = space.to_index(dim, &pos);
             assert_eq!(index, i);
         }
     }

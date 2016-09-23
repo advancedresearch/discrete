@@ -81,12 +81,8 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<Dimension, usize, usize, usize>();
-        is_complete::<Dimension<Of<Pair>>,
-            usize,
-            (usize, usize),
-            (usize, usize)
-        >();
+        is_complete::<Dimension, usize, usize>();
+        is_complete::<Dimension<Of<Pair>>, usize, (usize, usize)>();
         does_zero::<Dimension, usize, usize>();
         does_zero::<Dimension<Of<Pair>>,
             usize,
