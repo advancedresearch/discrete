@@ -112,9 +112,6 @@ mod tests {
         is_complete::<Pair, usize, (usize, usize)>();
         is_complete::<Pair<Of<Pair>>, usize,
             ((usize, usize), (usize, usize))>();
-        does_zero::<Pair, usize, (usize, usize)>();
-        does_zero::<Pair<Of<Pair>>, usize,
-            ((usize, usize), (usize, usize))>();
     }
 
     #[test]

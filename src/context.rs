@@ -337,6 +337,8 @@ mod tests {
     #[test]
     fn features() {
         is_complete::<Context, &[usize], (Vec<usize>, usize, usize)>();
+        is_complete::<Context<Of<Pair>>, &[usize],
+            (Vec<(usize, usize)>, usize, (usize, usize))>();
     }
 
     #[test]

@@ -130,8 +130,7 @@ mod tests {
     #[test]
     fn features() {
         is_complete::<PowerSet, usize, Vec<usize>>();
-        does_zero::<PowerSet, usize, Vec<usize>>();
-        does_zero::<PowerSet<Of<Pair>>, usize, Vec<(usize, usize)>>();
+        is_complete::<PowerSet<Of<Pair>>, usize, Vec<(usize, usize)>>();
     }
 
     #[test]

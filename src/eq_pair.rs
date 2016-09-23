@@ -113,9 +113,6 @@ mod tests {
         is_complete::<EqPair, usize, (usize, usize)>();
         is_complete::<EqPair<Of<EqPair>>, usize,
             ((usize, usize), (usize, usize))>();
-        does_zero::<EqPair, usize, (usize, usize)>();
-        does_zero::<EqPair<Of<EqPair>>, usize,
-            ((usize, usize), (usize, usize))>();
     }
 
     #[test]

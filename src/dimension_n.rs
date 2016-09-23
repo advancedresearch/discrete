@@ -141,9 +141,6 @@ mod tests {
     #[test]
     fn features() {
         is_complete::<DimensionN, &[usize], Vec<usize>>();
-        does_zero::<DimensionN, &[usize], Vec<usize>>();
-        does_zero::<DimensionN<Of<Pair>>, &[usize],
-            Vec<(usize, usize)>>();
     }
 
     #[test]

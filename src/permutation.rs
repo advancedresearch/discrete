@@ -154,11 +154,7 @@ mod test {
     #[test]
     fn features() {
         is_complete::<Permutation, usize, Vec<usize>>();
-        is_complete::<Permutation<Of<Pair>>, usize,
-            Vec<(usize, usize)>>();
-        does_zero::<Permutation, usize, Vec<usize>>();
-        does_zero::<Permutation<Of<Pair>>, usize,
-            Vec<(usize, usize)>>();
+        is_complete::<Permutation<Of<Pair>>, usize, Vec<(usize, usize)>>();
     }
 
     #[test]

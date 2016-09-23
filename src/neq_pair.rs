@@ -128,9 +128,6 @@ mod tests {
         is_complete::<NeqPair, usize, (usize, usize)>();
         is_complete::<NeqPair<Of<NeqPair>>, usize,
             ((usize, usize), (usize, usize))>();
-        does_zero::<NeqPair, usize, (usize, usize)>();
-        does_zero::<NeqPair<Of<NeqPair>>, usize,
-            ((usize, usize), (usize, usize))>();
     }
 
     #[test]
