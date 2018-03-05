@@ -48,7 +48,7 @@ Solution:
 ```
 
 This discrete space of this kind can be constructed by the type `DimensionN`.
-There are 4 dimensions, one for each people, which all has a size of 3.
+There are 4 dimensions, one for each person, which all has a size of 3.
 
 Now, consider another problem:
 
