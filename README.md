@@ -74,7 +74,7 @@ A discrete space is a non-ambiguous way to represent all possibilities from the 
 Each state in the space corresponds to a single location or a sub-structure of a larger problem.
 In other words, natural numbers behave as placeholders for something like generic types in programming.
 
-The structure of the discrete space do not automatically give you the answer,
+The structure of the discrete space does not automatically give you the answer,
 but it makes it easier to examine a problem from every perspective once you know how to define it.
 
 One benefit with this approach is that you can start with a low dimension to make sure you understand the problem,
