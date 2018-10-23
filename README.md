@@ -1,6 +1,8 @@
 # discrete
 Combinatorial phantom types for discrete mathematics
 
+[Change log](./CHANGES.md)
+
 This library is for constructing algorithms by composition that maps to and from natural numbers.
 
 For example, a pair is a tuple `(a, b)` where `b > a`.
