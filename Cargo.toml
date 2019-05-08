@@ -7,8 +7,8 @@ keywords = ["mathematics", "combinatorics", "phantom-types"]
 description = "Combinatorial phantom types for discrete mathematics"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/bvssvni/discrete.git"
-homepage = "https://github.com/bvssvni/discrete"
+repository = "https://github.com/advancedresearch/discrete.git"
+homepage = "https://github.com/advancedresearch/discrete"
 
 [lib]
 
