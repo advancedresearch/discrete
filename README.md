@@ -35,7 +35,7 @@ but by using computers we can sometimes use brute force.
 
 Solution:
 ```
-4^3 = 64
+3^4 = 81
 
 // Each digit position represent a person and the value is where the person lives.
 0000
