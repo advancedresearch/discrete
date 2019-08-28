@@ -20,6 +20,11 @@ use Zero;
 ///
 /// Dimensions of size 2 gives the edges on a hypercube of the number of dimensions.
 /// For example, `[2, 2, 2]` gives edges on a cube in 3 dimensions.
+///
+/// The position is a tuple `(Vec<usize>, usize, usize)`,
+/// where the first component describes the node coordinates,
+/// the second component describes the index of the coordinate that changes,
+/// and the third component describes the new value.
 pub struct Context<T = Data>(PhantomData<T>);
 
 /// Computes subspace offset from which index that changes.
