@@ -83,7 +83,7 @@ and pick only solutions where a house contains two or four people.
 Both solutions are valid answers, but they answer different questions.
 The first approach ignores the arrangement of individuals, while the second approach ignores the arrangement of couples.
 How we understand something can depend on which algorithm we use,
-but in an informal settings this can be ambiguous.
+but in an informal setting this can be ambiguous.
 
 A discrete space is a non-ambiguous way to represent all possibilities from the topology and dimension of the solution space.
 Each state in the space corresponds to a single location or a sub-structure of a larger problem.
