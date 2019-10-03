@@ -18,10 +18,21 @@ When you need all pair of pairs, you write `Pair<Of<Pair>>`.
 
 Discrete spaces that maps to and from natural numbers have many nice mathematical properties.
 For example, it can enumerate all possible structures by listing the natural numbers up to a limit.
-Two structures are equal if they map to the same natural number.
+
+Two structures are equivalent (isomorphic) if they map to and from natural numbers up to the same "count" (often called the "cardinality" in mathematical literature).
+Instead of proving isomorphisms directly between `A` and `B`, it is sufficient to prove `A ~=> nat` and `B ~=> nat`,
+then prove that they have the same cardinality.
 
 In principle you could just use numbers, but it would be very hard to write the correct algorithm.
 This library gives you the correct algorithms from the type composition.
+
+Another application of discrete spaces is to obtain upper bounds on complexity.
+By encoding more information about the problem into discrete spaces,
+one might get lower upper bounds on complexity, and often at the same time learn some new symmetries.
+An efficient encoding of a problem into a discrete space can tell you something about how to solve the problem efficiently.
+
+Discrete spaces are also easy to compose with each other.
+You can create one to see what happens when it is composed with other spaces.
 
 ### How to use discrete spaces in problem solving
 
@@ -37,7 +48,7 @@ Solution:
 ```
 3^4 = 81
 
-// Each digit position represent a person and the value is where the person lives.
+// Each digit position represents a person and the value is where the person lives.
 0000
 0001
 0002
@@ -51,6 +62,8 @@ Solution:
 
 This discrete space of this kind can be constructed by the type `DimensionN`.
 There are 4 dimensions, one for each person, which all has a size of 3.
+
+### Discrete spaces can resolve issues with ambiguity of natural language
 
 Now, consider another problem:
 
@@ -81,7 +94,7 @@ but it makes it easier to examine a problem from every perspective once you know
 
 One benefit with this approach is that you can start with a low dimension to make sure you understand the problem,
 and then expand to the real size of the space of possibilities afterwards.
-When a mathematical formula exists for e.g. counting possibilites,
+For example, when a mathematical formula exists for e.g. counting possibilites,
 discrete spaces are used to test the first few numbers in the formula.
 
 Sometimes a large solution space contains symmetries such that it can be contracted to a smaller space.
