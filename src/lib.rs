@@ -93,6 +93,7 @@ pub use permutation::Permutation;
 pub use context::Context;
 pub use directed_context::DirectedContext;
 pub use either::{Either, Select};
+pub use homotopy::{Homotopy, HPoint};
 
 mod construct;
 mod count;
@@ -110,6 +111,7 @@ mod context;
 mod directed_context;
 mod subspace;
 mod either;
+mod homotopy;
 
 /// Used by the final subspace.
 #[derive(Copy, Clone)]
