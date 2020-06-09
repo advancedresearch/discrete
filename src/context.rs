@@ -175,8 +175,6 @@ impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
         fn subspace_offset<T, U>(v: &[U], ind: usize) -> usize
             where T: Construct + Count<U>
         {
-            use Pair;
-
             let of: T = Construct::new();
             let pair: Pair<Data> = Construct::new();
             let mut sum = 0;
@@ -274,8 +272,6 @@ for Context<Of<T>>
         fn ind_from_index<T, U>(v: &[U], index: usize) -> (usize, usize)
             where T: Construct + Count<U>
         {
-            use Pair;
-
             let of: T = Construct::new();
             let pair: Pair<Data> = Construct::new();
             let mut sum = 0;
