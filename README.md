@@ -39,8 +39,8 @@ You can create one to see what happens when it is composed with other spaces.
 Imagine 4 people living in 3 different houses. How many combinations are there,
 and can you list all of them?
 
-This kind of problems occur frequently in the real world.
-One common property is that they contain lots of unknown variables and uncertainties.
+This kind of problem occurs frequently in the real world.
+One common property is that the problems contain lots of unknown variables and uncertainties.
 Our human brains are poorly adapted to think of many possibilities at once,
 but by using computers we can sometimes use brute force.
 
@@ -60,7 +60,7 @@ Solution:
 3333
 ```
 
-This discrete space of this kind can be constructed by the type `DimensionN`.
+The discrete space of this kind can be constructed by the type `DimensionN`.
 There are 4 dimensions, one for each person, which all has a size of 3.
 
 ### Discrete spaces can resolve issues with ambiguity of natural language
@@ -94,7 +94,7 @@ but it makes it easier to examine a problem from every perspective once you know
 
 One benefit with this approach is that you can start with a low dimension to make sure you understand the problem,
 and then expand to the real size of the space of possibilities afterwards.
-For example, when a mathematical formula exists for e.g. counting possibilites,
+When a mathematical formula exists for e.g. counting possibilities,
 discrete spaces are used to test the first few numbers in the formula.
 
 Sometimes a large solution space contains symmetries such that it can be contracted to a smaller space.
