@@ -24,8 +24,8 @@
 //! let x: Pair<Data> = Construct::new();
 //! ~~~
 //!
-//! The `x` above is a phantom variable, it does not use memory
-//! in the compiled program. It represents the discrete space
+//! The `x` above is a phantom variable, which means it does not use memory
+//! in the compiled program. The phantom variable represents the discrete space
 //! that we have constructed. Now we can call methods on the space
 //! to examine its discrete structure.
 //!
@@ -48,27 +48,27 @@
 //! ~~~
 //!
 //! Phantom types makes it possible to construct advanced discrete spaces.
-//! By using generic program, the algorithms to examine the structure
+//! By using a generic program, the algorithms to examine the structure
 //! follows from the construction of the space.
 //!
-//! This makes it possible to solve tasks as:
+//! This makes it possible to solve tasks such as:
 //!
-//! - Compute upper bounds for certain problems
+//! - Compute upper bounds for many problems
 //! - Store data with a non-trivial structure
 //! - Convert from and to natural numbers
-//! - Iterate through the space
+//! - Iterate through all elements of a space
 //! - Pick a random object of the space
 //!
-//! Iterating through the space can be done simply
+//! Iterating through all elements of a space can be done simply
 //! by counting from zero up to the size of the space.
 //! For each number, we convert to a position within the space.
 //!
-//! Pick a random object of the space can be done by generating
+//! Picking a random object of the space can be done by generating
 //! a random number between 0 and the size of the space.
 //!
 //! ### Advanced spaces
 //!
-//! Phantom types are used because they represents the general spaces.
+//! Phantom types are used because they represent the general spaces.
 //! For example, we can represent a general two-dimensional space,
 //! instead of binding the type to the size.
 //!
