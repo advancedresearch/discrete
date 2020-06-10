@@ -1,3 +1,7 @@
+# 0.4
+
+- Added `SqPair` space
+
 # 0.3
 
 - Added `Homotopy` space
