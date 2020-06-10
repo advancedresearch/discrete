@@ -89,7 +89,7 @@ ToPos<U, (V, V)> for EqPair<Of<T>>
     ) {
         let of: T = Construct::new();
         let data: EqPair<Data> = Construct::new();
-        let count = self.count(dim);
+        let count = of.count(dim);
         let mut pair = (0, 0);
         data.to_pos(&count, index, &mut pair);
         let (pair_min, pair_max) = pair;
