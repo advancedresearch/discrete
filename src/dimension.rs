@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use num::BigUint;
+
 use Construct;
 use Data;
 use Count;
@@ -20,11 +22,16 @@ impl Count<usize> for Dimension<Data> {
     fn count(&self, dim: &usize) -> usize { *dim }
 }
 
+impl Count<BigUint> for Dimension<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &BigUint) -> BigUint { dim.clone() }
+}
+
 impl<T, U> Count<U> for Dimension<Of<T>>
-    where T: Construct + Count<U, N = usize>
+    where T: Construct + Count<U>
 {
-    type N = usize;
-    fn count(&self, dim: &U) -> usize {
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &U) -> Self::N {
         let of: T = Construct::new();
         of.count(dim)
     }
