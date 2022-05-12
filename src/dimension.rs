@@ -16,12 +16,14 @@ impl<T> Construct for Dimension<T> {
 }
 
 impl Count<usize> for Dimension<Data> {
+    type N = usize;
     fn count(&self, dim: &usize) -> usize { *dim }
 }
 
 impl<T, U> Count<U> for Dimension<Of<T>>
-    where T: Construct + Count<U>
+    where T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, dim: &U) -> usize {
         let of: T = Construct::new();
         of.count(dim)

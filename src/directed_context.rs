@@ -17,6 +17,7 @@ impl<T> Construct for DirectedContext<T> {
 }
 
 impl Count<Vec<usize>> for DirectedContext<Data> {
+    type N = usize;
     fn count(&self, dim: &Vec<usize>) -> usize {
         use NeqPair;
 
@@ -32,8 +33,9 @@ impl Count<Vec<usize>> for DirectedContext<Data> {
 }
 
 impl<T, U> Count<Vec<U>> for DirectedContext<Of<T>>
-    where T: Construct + Count<U>
+    where T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, dim: &Vec<U>) -> usize {
         use NeqPair;
 
@@ -90,7 +92,7 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
 
 impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where T: Construct + Count<U> + ToIndex<U, V>,
+    where T: Construct + Count<U, N = usize> + ToIndex<U, V>,
           V: Clone
 {
     fn to_index(
@@ -135,7 +137,7 @@ impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
 impl<T, U, V>
 ToPos<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>,
+    where T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>,
           V: Clone
 {
     fn to_pos(

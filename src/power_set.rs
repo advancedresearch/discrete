@@ -16,6 +16,7 @@ impl<T> Construct for PowerSet<T> {
 }
 
 impl Count<usize> for PowerSet<Data> {
+    type N = usize;
     fn count(&self, dim: &usize) -> usize {
         1 << *dim
     }
@@ -23,8 +24,9 @@ impl Count<usize> for PowerSet<Data> {
 
 impl<T, U> Count<U> for PowerSet<Of<T>>
     where
-        T: Construct + Count<U>
+        T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, dim: &U) -> usize {
         let of: T = Construct::new();
         1 << of.count(dim)
@@ -98,7 +100,7 @@ impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
 impl<T, U, V>
 ToPos<U, Vec<V>>
 for PowerSet<Of<T>>
-    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
+    where T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>
 {
     fn to_pos(
         &self,

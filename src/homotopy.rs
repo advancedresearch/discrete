@@ -48,6 +48,7 @@ impl<T> Construct for Homotopy<T> {
 }
 
 impl Count<(usize, usize)> for Homotopy<Data> {
+    type N = usize;
     fn count(&self, &(level, n): &(usize, usize)) -> usize {
         let s: EqPair = Construct::new();
         let mut count = n;
@@ -60,8 +61,9 @@ impl Count<(usize, usize)> for Homotopy<Data> {
 
 impl<T, U> Count<(usize, U)> for Homotopy<Of<T>>
     where
-        T: Construct + Count<U>
+        T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, &(level, ref dim): &(usize, U)) -> usize {
         let of: T = Construct::new();
         let data: Homotopy<Data> = Construct::new();
@@ -120,7 +122,7 @@ for Homotopy<Data> {
 
 impl<T, U, V>
 ToIndex<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + ToIndex<U, V> + Count<U>, U: Clone
+    where T: Construct + ToIndex<U, V> + Count<U, N = usize>, U: Clone
 {
     fn to_index(
         &self,
@@ -182,7 +184,7 @@ impl ToPos<(usize, usize), HPoint> for Homotopy<Data> {
 
 impl<T, U, V>
 ToPos<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>, U: Clone
+    where T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>, U: Clone
 {
     fn to_pos(
         &self,
