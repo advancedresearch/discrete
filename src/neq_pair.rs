@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use num::BigUint;
+
 use Construct;
 use Data;
 use Count;
@@ -21,12 +23,21 @@ impl Count<usize> for NeqPair<Data> {
     fn count(&self, dim: &usize) -> usize { dim * (dim - 1) }
 }
 
+impl Count<BigUint> for NeqPair<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &BigUint) -> BigUint {
+        let _1: BigUint = 1usize.into();
+        dim * (dim - _1)
+    }
+}
+
 impl<T, U> Count<U> for NeqPair<Of<T>>
     where
-        T: Construct + Count<U, N = usize>
+        T: Construct + Count<U>,
+        NeqPair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
 {
-    type N = usize;
-    fn count(&self, dim: &U) -> usize {
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &U) -> Self::N {
         let of: T = Construct::new();
         let data: NeqPair<Data> = Construct::new();
         data.count(&of.count(dim))
