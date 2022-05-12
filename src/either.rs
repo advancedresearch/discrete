@@ -28,9 +28,10 @@ impl<T, U> Construct for Either<T, U>
 }
 
 impl<T, U, V, W> Count<(V, W)> for Either<T, U>
-    where T: Construct + Count<V>,
-          U: Construct + Count<W>
+    where T: Construct + Count<V, N = usize>,
+          U: Construct + Count<W, N = usize>
 {
+    type N = usize;
     fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> usize {
         let t: T = Construct::new();
         let u: U = Construct::new();
@@ -48,7 +49,7 @@ impl<T, U, V, W, X, Y> Zero<(V, W), Select<X, Y>> for Either<T, U>
 }
 
 impl<T, U, V, W, X, Y> ToIndex<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Count<V> + ToIndex<V, X>,
+    where T: Construct + Count<V, N = usize> + ToIndex<V, X>,
           U: Construct + ToIndex<W, Y>
 {
     fn to_index(
@@ -71,7 +72,7 @@ impl<T, U, V, W, X, Y> ToIndex<(V, W), Select<X, Y>> for Either<T, U>
 }
 
 impl<T, U, V, W, X, Y> ToPos<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Count<V> + ToPos<V, X> + Zero<V, X>,
+    where T: Construct + Count<V, N = usize> + ToPos<V, X> + Zero<V, X>,
           U: Construct + ToPos<W, Y> + Zero<W, Y>
 {
     fn to_pos(

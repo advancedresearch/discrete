@@ -79,6 +79,7 @@ impl<T> Construct for Context<T> {
 }
 
 impl Count<Vec<usize>> for Context<Data> {
+    type N = usize;
     fn count(&self, dim: &Vec<usize>) -> usize {
         use Pair;
 
@@ -95,8 +96,9 @@ impl Count<Vec<usize>> for Context<Data> {
 
 impl<T, U> Count<Vec<U>> for Context<Of<T>>
     where
-        T: Construct + Count<U>
+        T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, dim: &Vec<U>) -> usize {
         use Pair;
 
@@ -165,7 +167,7 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
 
 impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
     where
-        T: Construct + Count<U> + ToIndex<U, V>
+        T: Construct + Count<U, N = usize> + ToIndex<U, V>
 {
     fn to_index(
         &self,
@@ -173,7 +175,7 @@ impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
         &(ref p, ind, ref b): &(Vec<V>, usize, V)
     ) -> usize {
         fn subspace_offset<T, U>(v: &[U], ind: usize) -> usize
-            where T: Construct + Count<U>
+            where T: Construct + Count<U, N = usize>
         {
             let of: T = Construct::new();
             let pair: Pair<Data> = Construct::new();
@@ -261,7 +263,7 @@ impl<T, U, V>
 ToPos<Vec<U>, (Vec<V>, usize, V)>
 for Context<Of<T>>
     where
-        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
+        T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>
 {
     fn to_pos(
         &self,
@@ -270,7 +272,7 @@ for Context<Of<T>>
         &mut (ref mut p, ref mut ind, ref mut b): &mut (Vec<V>, usize, V)
     ) {
         fn ind_from_index<T, U>(v: &[U], index: usize) -> (usize, usize)
-            where T: Construct + Count<U>
+            where T: Construct + Count<U, N = usize>
         {
             let of: T = Construct::new();
             let pair: Pair<Data> = Construct::new();

@@ -16,6 +16,7 @@ impl<T> Construct for DimensionN<T> {
 }
 
 impl Count<Vec<usize>> for DimensionN<Data> {
+    type N = usize;
     fn count(&self, dim: &Vec<usize>) -> usize {
         let mut prod = 1;
         for i in 0..dim.len() {
@@ -28,8 +29,9 @@ impl Count<Vec<usize>> for DimensionN<Data> {
 impl<T, U>
 Count<Vec<U>> for DimensionN<Of<T>>
     where
-        T: Construct + Count<U>
+        T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, dim: &Vec<U>) -> usize {
         let of: T = Construct::new();
         let mut prod = 1;
@@ -73,7 +75,7 @@ impl ToIndex<Vec<usize>, Vec<usize>> for DimensionN<Data> {
 
 impl<T, U, V>
 ToIndex<Vec<U>, Vec<V>> for DimensionN<Of<T>>
-    where T: Construct + Count<U> + ToIndex<U, V>
+    where T: Construct + Count<U, N = usize> + ToIndex<U, V>
 {
     fn to_index(
         &self,
@@ -110,7 +112,7 @@ impl ToPos<Vec<usize>, Vec<usize>> for DimensionN<Data> {
 impl<T, U, V>
 ToPos<Vec<U>, Vec<V>>
 for DimensionN<Of<T>>
-    where T: Construct + Count<U> + ToPos<U, V>
+    where T: Construct + Count<U, N = usize> + ToPos<U, V>
 {
     fn to_pos(
         &self,

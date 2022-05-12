@@ -76,6 +76,8 @@
 //! The dimension and position types are compositions,
 //! given by the type of the constructed space.
 
+extern crate num;
+
 use std::marker::PhantomData;
 
 pub use construct::Construct;

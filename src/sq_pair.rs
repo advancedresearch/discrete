@@ -18,13 +18,15 @@ impl<T> Construct for SqPair<T> {
 }
 
 impl Count<usize> for SqPair<Data> {
+    type N = usize;
     fn count(&self, dim: &usize) -> usize {dim * dim}
 }
 
 impl<T, U> Count<U> for SqPair<Of<T>>
     where
-        T: Construct + Count<U>
+        T: Construct + Count<U, N = usize>
 {
+    type N = usize;
     fn count(&self, dim: &U) -> usize {
         let of: T = Construct::new();
         let data: SqPair<Data> = Construct::new();
@@ -56,7 +58,7 @@ impl ToIndex<usize, (usize, usize)> for SqPair<Data> {
 impl<T, U, V>
 ToIndex<U, (V, V)> for SqPair<Of<T>>
     where
-        T: Construct + ToIndex<U, V> + Count<U>
+        T: Construct + ToIndex<U, V> + Count<U, N = usize>
 {
     fn to_index(
         &self,
@@ -81,7 +83,7 @@ impl ToPos<usize, (usize, usize)> for SqPair<Data> {
 impl<T, U, V>
 ToPos<U, (V, V)> for SqPair<Of<T>>
     where
-        T: Construct + Count<U> + ToPos<U, V>
+        T: Construct + Count<U, N = usize> + ToPos<U, V>
 {
     fn to_pos(
         &self,
