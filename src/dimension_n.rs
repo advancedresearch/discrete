@@ -1,4 +1,7 @@
 use std::marker::PhantomData;
+use std::ops::MulAssign;
+
+use num::BigUint;
 
 use Construct;
 use Data;
@@ -26,15 +29,27 @@ impl Count<Vec<usize>> for DimensionN<Data> {
     }
 }
 
+impl Count<Vec<BigUint>> for DimensionN<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
+        let mut prod: BigUint = 1u64.into();
+        for i in 0..dim.len() {
+            prod *= &dim[i];
+        }
+        prod
+    }
+}
+
 impl<T, U>
 Count<Vec<U>> for DimensionN<Of<T>>
     where
-        T: Construct + Count<U, N = usize>
+        T: Construct + Count<U>,
+        <T as Count<U>>::N: From<usize> + MulAssign,
 {
-    type N = usize;
-    fn count(&self, dim: &Vec<U>) -> usize {
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &Vec<U>) -> Self::N {
         let of: T = Construct::new();
-        let mut prod = 1;
+        let mut prod: Self::N = 1usize.into();
         for i in 0..dim.len() {
             prod *= of.count(&dim[i]);
         }
