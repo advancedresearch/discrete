@@ -1,5 +1,7 @@
 use std::marker::PhantomData;
 
+use std::ops::Add;
+
 use Construct;
 use Count;
 use ToIndex;
@@ -28,11 +30,12 @@ impl<T, U> Construct for Either<T, U>
 }
 
 impl<T, U, V, W> Count<(V, W)> for Either<T, U>
-    where T: Construct + Count<V, N = usize>,
-          U: Construct + Count<W, N = usize>
+    where T: Construct + Count<V>,
+          U: Construct + Count<W, N = <T as Count<V>>::N>,
+          <T as Count<V>>::N: Add<Output = <T as Count<V>>::N>
 {
-    type N = usize;
-    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> usize {
+    type N = <T as Count<V>>::N;
+    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> Self::N {
         let t: T = Construct::new();
         let u: U = Construct::new();
         t.count(dim_t) + u.count(dim_u)
