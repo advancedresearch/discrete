@@ -1,10 +1,14 @@
 
 use std::marker::PhantomData;
+use std::ops::{Add, Mul, MulAssign};
+
+use num::BigUint;
 
 use Construct;
 use Data;
 use Count;
 use Of;
+use NeqPair;
 use ToIndex;
 use ToPos;
 use Zero;
@@ -19,8 +23,6 @@ impl<T> Construct for DirectedContext<T> {
 impl Count<Vec<usize>> for DirectedContext<Data> {
     type N = usize;
     fn count(&self, dim: &Vec<usize>) -> usize {
-        use NeqPair;
-
         let pair: NeqPair<Data> = Construct::new();
         let mut sum = pair.count(&dim[0]);
         let mut prod = dim[0];
@@ -32,20 +34,38 @@ impl Count<Vec<usize>> for DirectedContext<Data> {
     }
 }
 
-impl<T, U> Count<Vec<U>> for DirectedContext<Of<T>>
-    where T: Construct + Count<U, N = usize>
-{
-    type N = usize;
-    fn count(&self, dim: &Vec<U>) -> usize {
-        use NeqPair;
+impl Count<Vec<BigUint>> for DirectedContext<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
+        let pair: NeqPair<Data> = Construct::new();
+        let mut sum = pair.count(&dim[0]);
+        let mut prod = dim[0].clone();
+        for d in &dim[1..] {
+            sum = d * sum + pair.count(d) * &prod;
+            prod *= d;
+        }
+        sum
+    }
+}
 
+impl<T, U> Count<Vec<U>> for DirectedContext<Of<T>>
+    where T: Construct + Count<U>,
+          for<'a> <T as Count<U>>::N: MulAssign +
+                Mul<Output = <T as Count<U>>::N> +
+                Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N> +
+                Add<Output = <T as Count<U>>::N>,
+          for<'a> &'a <T as Count<U>>::N: Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N>,
+          NeqPair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
+{
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &Vec<U>) -> Self::N {
         let of: T = Construct::new();
         let pair: NeqPair<Data> = Construct::new();
         let mut sum = pair.count(&of.count(&dim[0]));
         let mut prod = of.count(&dim[0]);
         for d in &dim[1..] {
             let d = of.count(d);
-            sum = d * sum + pair.count(&d) * prod;
+            sum = &d * &sum + pair.count(&d) * &prod;
             prod *= d;
         }
         sum
