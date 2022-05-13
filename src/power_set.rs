@@ -1,5 +1,8 @@
 use std::marker::PhantomData;
 
+use num::BigUint;
+use num::pow::Pow;
+
 use Construct;
 use Of;
 use ToPos;
@@ -22,14 +25,27 @@ impl Count<usize> for PowerSet<Data> {
     }
 }
 
+impl Count<BigUint> for PowerSet<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &BigUint) -> BigUint {
+        use std::convert::TryInto;
+
+        let _two: BigUint = 2usize.into();
+        let dim: u32 = dim.try_into().unwrap();
+        _two.pow(dim)
+    }
+}
+
 impl<T, U> Count<U> for PowerSet<Of<T>>
     where
-        T: Construct + Count<U, N = usize>
+        T: Construct + Count<U>,
+        <T as Count<U>>::N: From<usize> + Pow<<T as Count<U>>::N, Output = <T as Count<U>>::N>,
 {
-    type N = usize;
-    fn count(&self, dim: &U) -> usize {
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &U) -> Self::N {
+        let _two: Self::N = 2usize.into();
         let of: T = Construct::new();
-        1 << of.count(dim)
+        _two.pow(of.count(dim))
     }
 }
 
