@@ -1,10 +1,14 @@
 
 use std::marker::PhantomData;
+use std::ops::{Add, Mul, MulAssign};
+
+use num::BigUint;
 
 use Construct;
 use Data;
 use Count;
 use Of;
+use Pair;
 use ToIndex;
 use ToPos;
 use Zero;
@@ -37,8 +41,6 @@ pub struct Context<T = Data>(PhantomData<T>);
 /// [a, b, (c, x)]
 /// ```
 fn subspace_offset(v: &[usize], ind: usize) -> usize {
-    use Pair;
-
     let pair: Pair<Data> = Construct::new();
     let mut sum = 0;
     for i in 0..ind {
@@ -57,8 +59,6 @@ fn subspace_offset(v: &[usize], ind: usize) -> usize {
 /// axis that changes, and the subspace offset can be computed.
 /// Returns `(ind, offset)`
 fn ind_from_index(v: &[usize], index: usize) -> (usize, usize) {
-    use Pair;
-
     let pair: Pair<Data> = Construct::new();
     let mut sum = 0;
     for i in 0..v.len() {
@@ -81,8 +81,6 @@ impl<T> Construct for Context<T> {
 impl Count<Vec<usize>> for Context<Data> {
     type N = usize;
     fn count(&self, dim: &Vec<usize>) -> usize {
-        use Pair;
-
         let pair: Pair<Data> = Construct::new();
         let mut sum = pair.count(&dim[0]);
         let mut prod = dim[0];
@@ -94,21 +92,39 @@ impl Count<Vec<usize>> for Context<Data> {
     }
 }
 
+impl Count<Vec<BigUint>> for Context<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
+        let pair: Pair<Data> = Construct::new();
+        let mut sum = pair.count(&dim[0]);
+        let mut prod = dim[0].clone();
+        for d in &dim[1..] {
+            sum = d * sum + pair.count(d) * &prod;
+            prod *= d;
+        }
+        sum
+    }
+}
+
 impl<T, U> Count<Vec<U>> for Context<Of<T>>
     where
-        T: Construct + Count<U, N = usize>
+        T: Construct + Count<U>,
+        for<'a> <T as Count<U>>::N: MulAssign +
+            Add<Output = <T as Count<U>>::N> +
+            Mul<Output = <T as Count<U>>::N> +
+            Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N>,
+        for<'a> &'a <T as Count<U>>::N: Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N>,
+        Pair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
 {
-    type N = usize;
-    fn count(&self, dim: &Vec<U>) -> usize {
-        use Pair;
-
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &Vec<U>) -> Self::N {
         let of: T = Construct::new();
         let pair: Pair<Data> = Construct::new();
         let mut sum = pair.count(&of.count(&dim[0]));
         let mut prod = of.count(&dim[0]);
         for d in &dim[1..] {
             let d = of.count(d);
-            sum = d * sum + pair.count(&d) * prod;
+            sum = &d * &sum + pair.count(&d) * &prod;
             prod *= d;
         }
         sum
@@ -144,7 +160,6 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
         &(ref p, ind, b): &(Vec<usize>, usize, usize)
     ) -> usize {
         use std::cmp::{ min, max };
-        use Pair;
 
         let offset = subspace_offset(dim, ind);
         let pair: Pair<Data> = Construct::new();
@@ -192,7 +207,6 @@ impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
         }
 
         use std::cmp::{ min, max };
-        use Pair;
 
         let of: T = Construct::new();
         let offset = subspace_offset::<T, U>(dim, ind);
@@ -223,8 +237,6 @@ impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
         index: usize,
         &mut (ref mut p, ref mut ind, ref mut b): &mut (Vec<usize>, usize, usize)
     ) {
-        use Pair;
-
         p.clear();
         let pair_space: Pair<Data> = Construct::new();
         let (ind_val, offset) = ind_from_index(dim, index);
@@ -289,8 +301,6 @@ for Context<Of<T>>
             }
             (v.len(), sum)
         }
-
-        use Pair;
 
         let of: T = Construct::new();
         p.clear();
