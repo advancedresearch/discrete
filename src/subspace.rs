@@ -1,4 +1,6 @@
-//! Implements traits for tuples such subspaces can be constructed.
+//! Implements traits for tuples such that subspaces can be constructed.
+
+use std::ops::Mul;
 
 use Construct;
 use Count;
@@ -16,11 +18,12 @@ impl<T, U> Construct for (T, U)
 }
 
 impl<T, U, V, W> Count<(V, W)> for (T, U)
-    where T: Construct + Count<V, N = usize>,
-          U: Construct + Count<W, N = usize>
+    where T: Construct + Count<V>,
+          U: Construct + Count<W, N = <T as Count<V>>::N>,
+          <T as Count<V>>::N: Mul<Output = <T as Count<V>>::N>
 {
-    type N = usize;
-    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> usize {
+    type N = <T as Count<V>>::N;
+    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> Self::N {
         let t: T = Construct::new();
         let u: U = Construct::new();
         t.count(dim_t) * u.count(dim_u)
