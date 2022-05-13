@@ -1,6 +1,9 @@
 
 use std::marker::PhantomData;
 use std::default::Default;
+use std::ops::{AddAssign, MulAssign};
+
+use num::BigUint;
 
 use Construct;
 use Count;
@@ -30,16 +33,39 @@ impl Count<usize> for Permutation<Data> {
     }
 }
 
+impl Count<BigUint> for Permutation<Data> {
+    type N = BigUint;
+    fn count(&self, dim: &BigUint) -> BigUint {
+        let _1: BigUint = 1usize.into();
+        let mut res: BigUint = _1.clone();
+        let mut x = _1.clone();
+        loop {
+            if &x > dim {break}
+            res *= &x;
+            x += &_1;
+        }
+        res
+    }
+}
+
 impl<T, U> Count<U> for Permutation<Of<T>>
     where
-        T: Construct + Count<U, N = usize>
+        T: Construct + Count<U>,
+        for<'a> <T as Count<U>>::N: From<usize> + Clone + Ord +
+            AddAssign<&'a <T as Count<U>>::N> +
+            MulAssign<&'a <T as Count<U>>::N>
 {
-    type N = usize;
-    fn count(&self, dim: &U) -> usize {
+    type N = <T as Count<U>>::N;
+    fn count(&self, dim: &U) -> Self::N {
         let of: T = Construct::new();
-        let mut res = 1;
-        for x in 1..of.count(dim) + 1 {
-            res *= x;
+        let _1: Self::N = 1usize.into();
+        let mut x = _1.clone();
+        let mut res = _1.clone();
+        let of_count = of.count(dim);
+        loop {
+            if &x > &of_count {break}
+            res *= &x;
+            x += &_1;
         }
         res
     }
