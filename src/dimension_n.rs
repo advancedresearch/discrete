@@ -63,6 +63,12 @@ impl Zero<Vec<usize>, Vec<usize>> for DimensionN<Data> {
     }
 }
 
+impl Zero<Vec<BigUint>, Vec<BigUint>> for DimensionN<Data> {
+    fn zero(&self, dim: &Vec<BigUint>) -> Vec<BigUint> {
+        vec![0usize.into(); dim.len()]
+    }
+}
+
 impl<T, U, V>
 Zero<Vec<U>, Vec<V>>
 for DimensionN<Of<T>>
