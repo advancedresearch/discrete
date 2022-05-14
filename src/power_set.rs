@@ -55,6 +55,12 @@ impl Zero<usize, Vec<usize>> for PowerSet<Data> {
     }
 }
 
+impl Zero<BigUint, Vec<BigUint>> for PowerSet<Data> {
+    fn zero(&self, _dim: &BigUint) -> Vec<BigUint> {
+        vec![]
+    }
+}
+
 impl<T, U, V> Zero<U, Vec<V>> for PowerSet<Of<T>>
     where T: Construct + Count<U> + Zero<U, V>
 {
