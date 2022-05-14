@@ -48,6 +48,10 @@ impl Zero<usize, (usize, usize)> for Pair<Data> {
     fn zero(&self, _dim: &usize) -> (usize, usize) { (0, 0) }
 }
 
+impl Zero<BigUint, (BigUint, BigUint)> for Pair<Data> {
+    fn zero(&self, _dim: &BigUint) -> (BigUint, BigUint) { (0usize.into(), 0usize.into()) }
+}
+
 impl<T, U, V>
 Zero<U, (V, V)> for Pair<Of<T>>
     where T: Construct + Zero<U, V>
