@@ -46,6 +46,10 @@ impl Zero<usize, (usize, usize)> for SqPair<Data> {
     fn zero(&self, _: &usize) -> (usize, usize) {(0, 0)}
 }
 
+impl Zero<BigUint, (BigUint, BigUint)> for SqPair<Data> {
+    fn zero(&self, _: &BigUint) -> (BigUint, BigUint) {(0usize.into(), 0usize.into())}
+}
+
 impl<T, U, V>
 Zero<U, (V, V)> for SqPair<Of<T>>
     where
