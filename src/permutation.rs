@@ -160,8 +160,7 @@ impl ToPos<usize, Vec<usize>> for Permutation<Data> {
 
 impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + ToPos<U, V>,
-        V: Default
+        T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>
 {
     fn to_pos(&self, dim: &U, mut index: usize, pos: &mut Vec<V>) {
         let of: T = Construct::new();
@@ -171,7 +170,7 @@ impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
         let mut count = 1;
         for (j, x) in (1..of_count + 1).enumerate() {
             count *= x;
-            let mut new_pos: V = Default::default();
+            let mut new_pos: V = of.zero(&dim);
             of.to_pos(dim, j, &mut new_pos);
             pos.push(new_pos);
         }
