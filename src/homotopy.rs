@@ -97,6 +97,17 @@ impl Zero<(usize, usize), HPoint> for Homotopy<Data> {
     }
 }
 
+impl Zero<(usize, BigUint), HPoint<BigUint>> for Homotopy<Data> {
+    fn zero(&self, (level, n): &(usize, BigUint)) -> HPoint<BigUint> {
+        use HPoint::*;
+
+        match *level {
+            0 => Point(0usize.into()),
+            _ => Path(Box::new((self.zero(&(level-1, n.clone())), self.zero(&(level-1, n.clone()))))),
+        }
+    }
+}
+
 impl<T, U, V>
 Zero<(usize, U), HPoint<V>> for Homotopy<Of<T>>
     where T: Construct + Zero<U, V>, U: Clone
