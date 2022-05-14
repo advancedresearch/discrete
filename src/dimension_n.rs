@@ -59,7 +59,7 @@ Count<Vec<U>> for DimensionN<Of<T>>
 
 impl Zero<Vec<usize>, Vec<usize>> for DimensionN<Data> {
     fn zero(&self, dim: &Vec<usize>) -> Vec<usize> {
-        vec![0, dim.len()]
+        vec![0; dim.len()]
     }
 }
 
@@ -184,5 +184,12 @@ mod tests {
         x.to_pos(dim, 3, &mut pos);
         assert_eq!(pos[0], (0, 1));
         assert_eq!(pos[1], (0, 2));
+    }
+
+    #[test]
+    fn zero() {
+        let x: DimensionN = Construct::new();
+        let ref dim = vec![2; 3];
+        assert_eq!(x.zero(dim), vec![0; 3]);
     }
 }
