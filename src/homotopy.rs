@@ -61,33 +61,28 @@ impl Count<(usize, usize)> for Homotopy<Data> {
     }
 }
 
-impl Count<(BigUint, BigUint)> for Homotopy<Data> {
+impl Count<(usize, BigUint)> for Homotopy<Data> {
     type N = BigUint;
-    fn count(&self, (level, n): &(BigUint, BigUint)) -> BigUint {
+    fn count(&self, (level, n): &(usize, BigUint)) -> BigUint {
         let s: EqPair = Construct::new();
         let mut count = n.clone();
-        let mut i: BigUint = 0usize.into();
-        let _1: BigUint = 1usize.into();
-        loop {
-            if &i >= &level {break}
+        for _ in 0..*level {
             count = s.count(&count);
-            i += &_1;
         }
         count
     }
 }
 
-impl<T, U> Count<(<T as Count<U>>::N, U)> for Homotopy<Of<T>>
+impl<T, U> Count<(usize, U)> for Homotopy<Of<T>>
     where
         T: Construct + Count<U>,
-        <T as Count<U>>::N: Clone,
-        Homotopy: Count<(<T as Count<U>>::N, <T as Count<U>>::N), N = <T as Count<U>>::N>
+        Homotopy: Count<(usize, <T as Count<U>>::N), N = <T as Count<U>>::N>
 {
     type N = <T as Count<U>>::N;
-    fn count(&self, (level, dim): &(Self::N, U)) -> Self::N {
+    fn count(&self, (level, dim): &(usize, U)) -> Self::N {
         let of: T = Construct::new();
         let data: Homotopy<Data> = Construct::new();
-        data.count(&(level.clone(), of.count(dim)))
+        data.count(&(*level, of.count(dim)))
     }
 }
 
