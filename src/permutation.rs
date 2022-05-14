@@ -1,6 +1,5 @@
 
 use std::marker::PhantomData;
-use std::default::Default;
 use std::ops::{AddAssign, MulAssign};
 use std::convert::TryInto;
 
