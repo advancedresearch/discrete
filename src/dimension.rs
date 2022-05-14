@@ -41,6 +41,10 @@ impl Zero<usize, usize> for Dimension<Data> {
     fn zero(&self, _dim: &usize) -> usize { 0 }
 }
 
+impl Zero<BigUint, BigUint> for Dimension<Data> {
+    fn zero(&self, _dim: &BigUint) -> BigUint { 0usize.into() }
+}
+
 impl<T, U, V>
 Zero<U, V> for Dimension<Of<T>>
     where T: Construct + Zero<U, V>
