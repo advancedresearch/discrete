@@ -2,6 +2,7 @@
 use std::marker::PhantomData;
 use std::default::Default;
 use std::ops::{AddAssign, MulAssign};
+use std::convert::TryInto;
 
 use num::BigUint;
 
@@ -79,8 +80,6 @@ impl Zero<usize, Vec<usize>> for Permutation<Data> {
 
 impl Zero<BigUint, Vec<BigUint>> for Permutation<Data> {
     fn zero(&self, dim: &BigUint) -> Vec<BigUint> {
-        use std::convert::TryInto;
-
         let dim: usize = dim.try_into().unwrap();
         vec![0usize.into(); dim]
     }
@@ -88,12 +87,17 @@ impl Zero<BigUint, Vec<BigUint>> for Permutation<Data> {
 
 impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + Zero<U, V>,
-        V: Default + Clone
+        T: Construct + Count<U> + Zero<U, V>,
+        <T as Count<U>>::N: TryInto<usize>,
+        V: Clone
 {
     fn zero(&self, dim: &U) -> Vec<V> {
         let of: T = Construct::new();
-        vec![of.zero(dim); of.count(dim)]
+        let count = match of.count(dim).try_into() {
+            Ok(x) => x,
+            Err(_) => panic!("Out of range"),
+        };
+        vec![of.zero(dim); count]
     }
 }
 
