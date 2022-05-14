@@ -77,6 +77,15 @@ impl Zero<usize, Vec<usize>> for Permutation<Data> {
     }
 }
 
+impl Zero<BigUint, Vec<BigUint>> for Permutation<Data> {
+    fn zero(&self, dim: &BigUint) -> Vec<BigUint> {
+        use std::convert::TryInto;
+
+        let dim: usize = dim.try_into().unwrap();
+        vec![0usize.into(); dim]
+    }
+}
+
 impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
     where
         T: Construct + Count<U, N = usize> + Zero<U, V>,
