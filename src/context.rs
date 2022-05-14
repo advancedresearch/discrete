@@ -137,6 +137,12 @@ impl Zero<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
     }
 }
 
+impl Zero<Vec<BigUint>, (Vec<BigUint>, usize, BigUint)> for Context<Data> {
+    fn zero(&self, dim: &Vec<BigUint>) -> (Vec<BigUint>, usize, BigUint) {
+        (vec![0usize.into(); dim.len()], 0, 0usize.into())
+    }
+}
+
 impl<T, U, V>
 Zero<Vec<U>, (Vec<V>, usize, V)>
 for Context<Of<T>>
