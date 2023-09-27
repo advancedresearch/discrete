@@ -65,6 +65,7 @@ Zero<U, (V, V)> for EqPair<Of<T>>
 
 impl ToIndex<usize, (usize, usize)>
 for EqPair<Data> {
+    type N = usize;
     fn to_index(&self, _dim: &usize, &(min, max): &(usize, usize)) -> usize {
         min + max * (max + 1) / 2
     }
@@ -72,8 +73,9 @@ for EqPair<Data> {
 
 impl<T, U, V>
 ToIndex<U, (V, V)> for EqPair<Of<T>>
-    where T: Construct + ToIndex<U, V> + Count<U, N = usize>
+    where T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &U,

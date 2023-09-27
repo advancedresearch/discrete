@@ -160,6 +160,7 @@ for Context<Of<T>>
 }
 
 impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
+    type N = usize;
     fn to_index(
         &self,
         dim: &Vec<usize>,
@@ -188,8 +189,9 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
 
 impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + ToIndex<U, V>
+        T: Construct + Count<U, N = usize> + ToIndex<U, V, N = usize>
 {
+    type N = usize;   
     fn to_index(
         &self,
         dim: &Vec<U>,

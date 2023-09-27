@@ -85,6 +85,7 @@ for DimensionN<Of<T>>
 }
 
 impl ToIndex<Vec<usize>, Vec<usize>> for DimensionN<Data> {
+    type N = usize;
     fn to_index(&self, dim: &Vec<usize>, pos: &Vec<usize>) -> usize {
         let mut dim_index = 0;
         for i in (0..dim.len()).rev() {
@@ -96,8 +97,9 @@ impl ToIndex<Vec<usize>, Vec<usize>> for DimensionN<Data> {
 
 impl<T, U, V>
 ToIndex<Vec<U>, Vec<V>> for DimensionN<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToIndex<U, V>
+    where T: Construct + Count<U, N = usize> + ToIndex<U, V, N = usize>
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &Vec<U>,

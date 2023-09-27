@@ -62,6 +62,7 @@ Zero<U, (V, V)> for SqPair<Of<T>>
 }
 
 impl ToIndex<usize, (usize, usize)> for SqPair<Data> {
+    type N = usize;
     fn to_index(&self, dim: &usize, &(a, b): &(usize, usize)) -> usize {
         a + b * dim
     }
@@ -70,8 +71,9 @@ impl ToIndex<usize, (usize, usize)> for SqPair<Data> {
 impl<T, U, V>
 ToIndex<U, (V, V)> for SqPair<Of<T>>
     where
-        T: Construct + ToIndex<U, V> + Count<U, N = usize>
+        T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &U,

@@ -128,6 +128,7 @@ Zero<(usize, U), HPoint<V>> for Homotopy<Of<T>>
 
 impl ToIndex<(usize, usize), HPoint>
 for Homotopy<Data> {
+    type N = usize;
     fn to_index(&self, &(level, n): &(usize, usize), pos: &HPoint) -> usize {
         use HPoint::*;
 
@@ -148,8 +149,9 @@ for Homotopy<Data> {
 
 impl<T, U, V>
 ToIndex<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + ToIndex<U, V> + Count<U, N = usize>, U: Clone
+    where T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>, U: Clone
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &(usize, U),
