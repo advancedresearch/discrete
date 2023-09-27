@@ -100,6 +100,16 @@ impl ToPos<usize, (usize, usize)> for Pair<Data> {
     }
 }
 
+impl ToPos<BigUint, (BigUint, BigUint)> for Pair<Data> {
+    type N = BigUint;
+    fn to_pos(&self, _dim: &BigUint, index: BigUint, pos: &mut (BigUint, BigUint)) {
+        let max: BigUint = (1usize + (8usize * &index + 1usize).sqrt()) / 2usize;
+        let d = &max * (&max + 1usize) / 2usize;
+        let min = &index + &max - d;
+        *pos = (min, max)
+    }
+}
+
 impl<T, U, V>
 ToPos<U, (V, V)> for Pair<Of<T>>
     where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
