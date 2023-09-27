@@ -92,8 +92,10 @@ impl ToPos<usize, (usize, usize)> for Pair<Data> {
     type N = usize;
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut (usize, usize)) {
         use num::integer::Roots;
-        let max = (1 + (8 * index as u128 + 1).sqrt()) / 2;
-        let min = (index as u128).wrapping_sub(max * (max + 1) / 2).wrapping_add(max);
+        let index = index as u128;
+        let max = (1 + (8 * index + 1).sqrt()) / 2;
+        let d = max * (max + 1) / 2;
+        let min = (index).wrapping_add(max).wrapping_sub(d);
         *pos = (min as usize, max as usize)
     }
 }
