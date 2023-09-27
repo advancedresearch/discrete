@@ -97,6 +97,7 @@ pub use context::Context;
 pub use directed_context::DirectedContext;
 pub use either::{Either, Select};
 pub use homotopy::{Homotopy, HPoint};
+pub use num::BigUint;
 
 mod construct;
 mod count;
