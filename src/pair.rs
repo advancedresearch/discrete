@@ -89,6 +89,7 @@ ToIndex<U, (V, V)> for Pair<Of<T>>
 }
 
 impl ToPos<usize, (usize, usize)> for Pair<Data> {
+    type N = usize;
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut (usize, usize)) {
         use num::integer::Roots;
         let max = (1 + (8 * index as u128 + 1).sqrt()) / 2;
@@ -99,8 +100,9 @@ impl ToPos<usize, (usize, usize)> for Pair<Data> {
 
 impl<T, U, V>
 ToPos<U, (V, V)> for Pair<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V>
+    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &U,

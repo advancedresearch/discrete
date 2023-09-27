@@ -139,6 +139,7 @@ impl<T, U, V> ToIndex<U, Vec<V>> for Permutation<Of<T>>
 }
 
 impl ToPos<usize, Vec<usize>> for Permutation<Data> {
+    type N = usize;
     fn to_pos(&self, dim: &usize, mut index: usize, pos: &mut Vec<usize>) {
         unsafe { pos.set_len(0); }
 
@@ -161,8 +162,9 @@ impl ToPos<usize, Vec<usize>> for Permutation<Data> {
 
 impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>
+        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>
 {
+    type N = usize;
     fn to_pos(&self, dim: &U, mut index: usize, pos: &mut Vec<V>) {
         let of: T = Construct::new();
         let of_count = of.count(dim);

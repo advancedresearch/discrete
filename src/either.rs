@@ -76,9 +76,10 @@ impl<T, U, V, W, X, Y> ToIndex<(V, W), Select<X, Y>> for Either<T, U>
 }
 
 impl<T, U, V, W, X, Y> ToPos<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Count<V, N = usize> + ToPos<V, X> + Zero<V, X>,
-          U: Construct + ToPos<W, Y> + Zero<W, Y>
+    where T: Construct + Count<V, N = usize> + ToPos<V, X, N = usize> + Zero<V, X>,
+          U: Construct + ToPos<W, Y, N = usize> + Zero<W, Y>
 {
+    type N = usize;
     fn to_pos(
         &self,
         &(ref dim_t, ref dim_u): &(V, W),

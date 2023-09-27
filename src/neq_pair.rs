@@ -98,6 +98,7 @@ ToIndex<U, (V, V)> for NeqPair<Of<T>>
 }
 
 impl ToPos<usize, (usize, usize)> for NeqPair<Data> {
+    type N = usize;
     fn to_pos(&self, dim: &usize, index: usize, pos: &mut (usize, usize)) {
         use Pair;
 
@@ -116,8 +117,9 @@ impl ToPos<usize, (usize, usize)> for NeqPair<Data> {
 impl<T, U, V>
 ToPos<U, (V, V)> for NeqPair<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + ToPos<U, V>
+        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &U,

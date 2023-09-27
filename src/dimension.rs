@@ -72,6 +72,7 @@ impl<T, U, V> ToIndex<U, V> for Dimension<Of<T>>
 }
 
 impl ToPos<usize, usize> for Dimension<Data> {
+    type N = usize;
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut usize) {
         *pos = index;
     }
@@ -79,8 +80,9 @@ impl ToPos<usize, usize> for Dimension<Data> {
 
 impl<T, U, V> ToPos<U, V> for Dimension<Of<T>>
     where
-        T: Construct + ToPos<U, V>
+        T: Construct + ToPos<U, V, N = usize>
 {
+    type N = usize;
     fn to_pos(&self, dim: &U, index: usize, pos: &mut V) {
         let of: T = Construct::new();
         of.to_pos(dim, index, pos);
