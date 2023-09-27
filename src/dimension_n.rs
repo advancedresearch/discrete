@@ -116,6 +116,7 @@ ToIndex<Vec<U>, Vec<V>> for DimensionN<Of<T>>
 }
 
 impl ToPos<Vec<usize>, Vec<usize>> for DimensionN<Data> {
+    type N = usize;
     fn to_pos(&self, dim: &Vec<usize>, index: usize, pos: &mut Vec<usize>) {
         unsafe { pos.set_len(0); }
         let mut prod = self.count(dim);
@@ -135,8 +136,9 @@ impl ToPos<Vec<usize>, Vec<usize>> for DimensionN<Data> {
 impl<T, U, V>
 ToPos<Vec<U>, Vec<V>>
 for DimensionN<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V>
+    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<U>,

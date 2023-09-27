@@ -90,6 +90,7 @@ ToIndex<U, (V, V)> for EqPair<Of<T>>
 }
 
 impl ToPos<usize, (usize, usize)> for EqPair<Data> {
+    type N = usize;
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut (usize, usize)) {
         let max = ((-1f64 + (8f64 * index as f64 + 1f64).sqrt()) / 2f64) as usize;
         let min = index - max * (max + 1) / 2;
@@ -99,8 +100,9 @@ impl ToPos<usize, (usize, usize)> for EqPair<Data> {
 
 impl<T, U, V>
 ToPos<U, (V, V)> for EqPair<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V>
+    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &U,

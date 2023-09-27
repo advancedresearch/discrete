@@ -239,6 +239,7 @@ impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
 }
 
 impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<usize>,
@@ -283,8 +284,9 @@ impl<T, U, V>
 ToPos<Vec<U>, (Vec<V>, usize, V)>
 for Context<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>
+        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<U>,

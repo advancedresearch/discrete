@@ -88,6 +88,7 @@ ToIndex<U, (V, V)> for SqPair<Of<T>>
 }
 
 impl ToPos<usize, (usize, usize)> for SqPair<Data> {
+    type N = usize;
     fn to_pos(&self, dim: &usize, index: usize, pos: &mut (usize, usize)) {
         pos.0 = index % dim;
         pos.1 = index / dim;
@@ -97,8 +98,9 @@ impl ToPos<usize, (usize, usize)> for SqPair<Data> {
 impl<T, U, V>
 ToPos<U, (V, V)> for SqPair<Of<T>>
     where
-        T: Construct + Count<U, N = usize> + ToPos<U, V>
+        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &U,

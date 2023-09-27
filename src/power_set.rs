@@ -106,6 +106,7 @@ ToIndex<U, Vec<V>> for PowerSet<Of<T>>
 }
 
 impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &usize,
@@ -124,8 +125,9 @@ impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
 impl<T, U, V>
 ToPos<U, Vec<V>>
 for PowerSet<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>
+    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &U,

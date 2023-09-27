@@ -142,6 +142,7 @@ for DirectedContext<Of<T>>
 }
 
 impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<usize>,
@@ -165,9 +166,10 @@ impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
 impl<T, U, V>
 ToPos<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>,
+    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>,
           V: Clone
 {
+    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<U>,

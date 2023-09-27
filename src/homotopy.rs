@@ -179,6 +179,7 @@ ToIndex<(usize, U), HPoint<V>> for Homotopy<Of<T>>
 }
 
 impl ToPos<(usize, usize), HPoint> for Homotopy<Data> {
+    type N = usize;
     fn to_pos(&self, &(level, n): &(usize, usize), index: usize, pos: &mut HPoint) {
         use HPoint::*;
 
@@ -212,8 +213,9 @@ impl ToPos<(usize, usize), HPoint> for Homotopy<Data> {
 
 impl<T, U, V>
 ToPos<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V> + Zero<U, V>, U: Clone
+    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>, U: Clone
 {
+    type N = usize;
     fn to_pos(
         &self,
         &(level, ref dim): &(usize, U),
