@@ -52,9 +52,10 @@ impl<T, U, V, W, X, Y> Zero<(V, W), Select<X, Y>> for Either<T, U>
 }
 
 impl<T, U, V, W, X, Y> ToIndex<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Count<V, N = usize> + ToIndex<V, X>,
-          U: Construct + ToIndex<W, Y>
+    where T: Construct + Count<V, N = usize> + ToIndex<V, X, N = usize>,
+          U: Construct + ToIndex<W, Y, N = usize>
 {
+    type N = usize;
     fn to_index(
         &self,
         &(ref dim_t, ref dim_u): &(V, W),

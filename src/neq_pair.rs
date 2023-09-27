@@ -65,6 +65,7 @@ Zero<U, (V, V)> for NeqPair<Of<T>>
 
 impl ToIndex<usize, (usize, usize)>
 for NeqPair<Data> {
+    type N = usize;
     fn to_index(&self, dim: &usize, &(a, b): &(usize, usize)) -> usize {
         use Pair;
 
@@ -80,8 +81,9 @@ for NeqPair<Data> {
 impl<T, U, V>
 ToIndex<U, (V, V)> for NeqPair<Of<T>>
     where
-        T: Construct + ToIndex<U, V> + Count<U, N = usize>
+        T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &U,

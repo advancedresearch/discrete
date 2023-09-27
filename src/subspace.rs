@@ -42,9 +42,10 @@ impl<T, U, V, W, X, Y> Zero<(V, W), (X, Y)> for (T, U)
 }
 
 impl<T, U, V, W, X, Y> ToIndex<(V, W), (X, Y)> for (T, U)
-    where T: Construct + ToIndex<V, X>,
-          U: Construct + Count<W, N = usize> + ToIndex<W, Y>
+    where T: Construct + ToIndex<V, X, N = usize>,
+          U: Construct + Count<W, N = usize> + ToIndex<W, Y, N = usize>
 {
+    type N = usize;
     fn to_index(
         &self,
         &(ref dim_t, ref dim_u): &(V, W),

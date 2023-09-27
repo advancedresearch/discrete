@@ -101,6 +101,7 @@ impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
 }
 
 impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
+    type N = usize;
     fn to_index(&self, dim: &usize, pos: &Vec<usize>) -> usize {
         let mut index = 0;
         let mut count = 1;
@@ -115,9 +116,10 @@ impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
 
 impl<T, U, V> ToIndex<U, Vec<V>> for Permutation<Of<T>>
     where
-        T: Construct + ToIndex<U, V> + Count<U, N = usize>,
+        T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>,
         V: Clone
 {
+    type N = usize;
     fn to_index(&self, dim: &U, pos: &Vec<V>) -> usize {
         let of: T = Construct::new();
         let mut index = 0;

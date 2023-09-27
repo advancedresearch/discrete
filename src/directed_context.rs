@@ -100,6 +100,7 @@ for DirectedContext<Of<T>>
 }
 
 impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
+    type N = usize;
     fn to_index(
         &self, dim: &Vec<usize>,
         &(ref p, ind, b): &(Vec<usize>, usize, usize)
@@ -118,9 +119,10 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
 
 impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)>
 for DirectedContext<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToIndex<U, V>,
+    where T: Construct + Count<U, N = usize> + ToIndex<U, V, N = usize>,
           V: Clone
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &Vec<U>,

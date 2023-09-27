@@ -56,13 +56,15 @@ Zero<U, V> for Dimension<Of<T>>
 }
 
 impl ToIndex<usize, usize> for Dimension<Data> {
+    type N = usize;
     fn to_index(&self, _dim: &usize, pos: &usize) -> usize { *pos }
 }
 
 impl<T, U, V> ToIndex<U, V> for Dimension<Of<T>>
     where
-        T: Construct + ToIndex<U, V>
+        T: Construct + ToIndex<U, V, N = usize>
 {
+    type N = usize;
     fn to_index(&self, dim: &U, pos: &V) -> usize {
         let of: T = Construct::new();
         of.to_index(dim, pos)

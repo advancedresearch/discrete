@@ -70,6 +70,7 @@ impl<T, U, V> Zero<U, Vec<V>> for PowerSet<Of<T>>
 }
 
 impl ToIndex<usize, Vec<usize>> for PowerSet<Data> {
+    type N = usize;
     fn to_index(
         &self,
         _dim: &usize,
@@ -86,9 +87,10 @@ impl ToIndex<usize, Vec<usize>> for PowerSet<Data> {
 impl<T, U, V>
 ToIndex<U, Vec<V>> for PowerSet<Of<T>>
     where
-        T: Construct + ToIndex<U, V>,
+        T: Construct + ToIndex<U, V, N = usize>,
         V: Clone
 {
+    type N = usize;
     fn to_index(
         &self,
         dim: &U,
