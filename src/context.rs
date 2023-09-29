@@ -74,6 +74,26 @@ fn ind_from_index(v: &[usize], index: usize) -> (usize, usize) {
     (v.len(), sum)
 }
 
+/// Computes the index of the axis that changes from index position.
+/// This works because the layout are separated by which
+/// axis that changes, and the subspace offset can be computed.
+/// Returns `(ind, offset)`
+fn biguint_ind_from_index(v: &[BigUint], index: &BigUint) -> (usize, BigUint) {
+    let pair: Pair<Data> = Construct::new();
+    let mut sum: BigUint = 0usize.into();
+    for i in 0..v.len() {
+        let mut prod: BigUint = 1usize.into();
+        for j in 0..v.len() {
+            if i == j { continue; }
+            prod *= &v[j];
+        }
+        let add = pair.count(&v[i]) * prod;
+        if &(&sum + &add) > index { return (i, sum); }
+        sum += add;
+    }
+    (v.len(), sum)
+}
+
 impl<T> Construct for Context<T> {
     fn new() -> Context<T> { Context(PhantomData) }
 }
@@ -273,6 +293,49 @@ impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
             let p_i = dim_index / prod;
             p[i] = p_i;
             dim_index -= p_i * prod;
+        }
+        p[ind_val] = min;
+        *b = max;
+        *ind = ind_val;
+    }
+}
+
+impl ToPos<Vec<BigUint>, (Vec<BigUint>, usize, BigUint)> for Context<Data> {
+    type N = BigUint;
+    fn to_pos(
+        &self,
+        dim: &Vec<BigUint>,
+        index: BigUint,
+        &mut (ref mut p, ref mut ind, ref mut b): &mut (Vec<BigUint>, usize, BigUint)
+    ) {
+        p.clear();
+        let pair_space: Pair<Data> = Construct::new();
+        let (ind_val, offset) = biguint_ind_from_index(dim, &index);
+        // Get rid of offset.
+        // The rest equals: single * prod + dim_index
+        let index = index - &offset;
+        let mut prod: BigUint = 1usize.into();
+        for j in 0..dim.len() {
+            p.push(0usize.into()); // zero position
+            if ind_val == j { continue; }
+            prod *= &dim[j];
+        }
+        let single = &index / &prod;
+
+        let mut pair: (BigUint, BigUint) = (0usize.into(), 0usize.into());
+        // Pair doesn't care about dimension.
+        let z: BigUint = 0usize.into();
+        pair_space.to_pos(&z, single.clone(), &mut pair);
+        let (min, max) = pair;
+
+        // Resolve other dimension components.
+        let mut dim_index = index - &single * &prod;
+        for i in (0..p.len()).rev() {
+            if ind_val == i { continue; }
+            prod /= &dim[i];
+            let p_i = &dim_index / &prod;
+            dim_index -= &p_i * &prod;
+            p[i] = p_i;
         }
         p[ind_val] = min;
         *b = max;
