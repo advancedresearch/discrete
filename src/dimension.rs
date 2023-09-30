@@ -4,86 +4,56 @@ use num::BigUint;
 
 use Construct;
 use Data;
-use Count;
 use Of;
-use ToIndex;
-use ToPos;
-use Zero;
+use space::Space;
 
 /// Dimension is natural number, position is the same as index.
 pub struct Dimension<T = Data>(PhantomData<T>);
 
 impl<T> Construct for Dimension<T> {
-    fn new() -> Dimension<T> { Dimension(PhantomData) }
+    fn new() -> Self { Dimension(PhantomData) }
 }
 
-impl Count<usize> for Dimension<Data> {
-    type N = usize;
+impl Space<usize> for Dimension<Data> {
+    type Dim = usize;
+    type Pos = usize;
+
     fn count(&self, dim: &usize) -> usize { *dim }
-}
-
-impl Count<BigUint> for Dimension<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &BigUint) -> BigUint { dim.clone() }
-}
-
-impl<T, U> Count<U> for Dimension<Of<T>>
-    where T: Construct + Count<U>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &U) -> Self::N {
-        let of: T = Construct::new();
-        of.count(dim)
-    }
-}
-
-impl Zero<usize, usize> for Dimension<Data> {
     fn zero(&self, _dim: &usize) -> usize { 0 }
-}
-
-impl Zero<BigUint, BigUint> for Dimension<Data> {
-    fn zero(&self, _dim: &BigUint) -> BigUint { 0usize.into() }
-}
-
-impl<T, U, V>
-Zero<U, V> for Dimension<Of<T>>
-    where T: Construct + Zero<U, V>
-{
-    fn zero(&self, dim: &U) -> V {
-        let of: T = Construct::new();
-        of.zero(dim)
-    }
-}
-
-impl ToIndex<usize, usize> for Dimension<Data> {
-    type N = usize;
     fn to_index(&self, _dim: &usize, pos: &usize) -> usize { *pos }
-}
-
-impl<T, U, V> ToIndex<U, V> for Dimension<Of<T>>
-    where
-        T: Construct + ToIndex<U, V, N = usize>
-{
-    type N = usize;
-    fn to_index(&self, dim: &U, pos: &V) -> usize {
-        let of: T = Construct::new();
-        of.to_index(dim, pos)
-    }
-}
-
-impl ToPos<usize, usize> for Dimension<Data> {
-    type N = usize;
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut usize) {
         *pos = index;
     }
 }
 
-impl<T, U, V> ToPos<U, V> for Dimension<Of<T>>
-    where
-        T: Construct + ToPos<U, V, N = usize>
-{
-    type N = usize;
-    fn to_pos(&self, dim: &U, index: usize, pos: &mut V) {
+impl Space<BigUint> for Dimension<Data> {
+    type Dim = BigUint;
+    type Pos = BigUint;
+
+    fn count(&self, dim: &Self::Dim) -> BigUint { (*dim).clone() }
+    fn zero(&self, _dim: &Self::Dim) -> BigUint { 0usize.into() }
+    fn to_index(&self, _dim: &Self::Dim, pos: &Self::Pos) -> BigUint { (*pos).clone() }
+    fn to_pos(&self, _dim: &Self::Dim, index: BigUint, pos: &mut Self::Pos) {
+        *pos = index;
+    }
+}
+
+impl<N, T: Space<N>> Space<N> for Dimension<Of<T>> {
+    type Dim = T::Dim;
+    type Pos = T::Pos;
+    fn count(&self, dim: &Self::Dim) -> N {
+        let of: T = Construct::new();
+        of.count(dim)
+    }
+    fn zero(&self, dim: &Self::Dim) -> Self::Pos {
+        let of: T = Construct::new();
+        of.zero(dim)
+    }
+    fn to_index(&self, dim: &Self::Dim, pos: &Self::Pos) -> N {
+        let of: T = Construct::new();
+        of.to_index(dim, pos)
+    }
+    fn to_pos(&self, dim: &Self::Dim, index: N, pos: &mut Self::Pos) {
         let of: T = Construct::new();
         of.to_pos(dim, index, pos);
     }
@@ -95,7 +65,7 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<Dimension, usize, usize>();
-        is_complete::<Dimension<Of<Pair>>, usize, (usize, usize)>();
+        is_complete::<usize, Dimension>();
+        is_complete::<usize, Dimension<Of<Pair>>>();
     }
 }

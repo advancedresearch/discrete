@@ -4,12 +4,9 @@ use num::BigUint;
 
 use Construct;
 use Data;
-use Count;
 use Of;
-use ToIndex;
-use ToPos;
-use Zero;
 use EqPair;
+use space::Space;
 
 /// Stores a higher order point for homotopy spaces.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -46,11 +43,12 @@ impl<T> HPoint<T> {
 pub struct Homotopy<T = Data>(PhantomData<T>);
 
 impl<T> Construct for Homotopy<T> {
-    fn new() -> Homotopy<T> {Homotopy(PhantomData)}
+    fn new() -> Self {Homotopy(PhantomData)}
 }
 
-impl Count<(usize, usize)> for Homotopy<Data> {
-    type N = usize;
+impl Space<usize> for Homotopy<Data> {
+    type Dim = (usize, usize);
+    type Pos = HPoint;
     fn count(&self, &(level, n): &(usize, usize)) -> usize {
         let s: EqPair = Construct::new();
         let mut count = n;
@@ -59,76 +57,16 @@ impl Count<(usize, usize)> for Homotopy<Data> {
         }
         count
     }
-}
-
-impl Count<(usize, BigUint)> for Homotopy<Data> {
-    type N = BigUint;
-    fn count(&self, (level, n): &(usize, BigUint)) -> BigUint {
-        let s: EqPair = Construct::new();
-        let mut count = n.clone();
-        for _ in 0..*level {
-            count = s.count(&count);
-        }
-        count
-    }
-}
-
-impl<T, U> Count<(usize, U)> for Homotopy<Of<T>>
-    where
-        T: Construct + Count<U>,
-        Homotopy: Count<(usize, <T as Count<U>>::N), N = <T as Count<U>>::N>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, (level, dim): &(usize, U)) -> Self::N {
-        let of: T = Construct::new();
-        let data: Homotopy<Data> = Construct::new();
-        data.count(&(*level, of.count(dim)))
-    }
-}
-
-impl Zero<(usize, usize), HPoint> for Homotopy<Data> {
     fn zero(&self, &(level, n): &(usize, usize)) -> HPoint {
         use HPoint::*;
 
         match level {
             0 => Point(0),
-            _ => Path(Box::new((self.zero(&(level-1, n)), self.zero(&(level-1, n))))),
+            _ => Path(Box::new((
+                Space::<usize>::zero(self, &(level-1, n)),
+                Space::<usize>::zero(self, &(level-1, n))))),
         }
     }
-}
-
-impl Zero<(usize, BigUint), HPoint<BigUint>> for Homotopy<Data> {
-    fn zero(&self, (level, n): &(usize, BigUint)) -> HPoint<BigUint> {
-        use HPoint::*;
-
-        match *level {
-            0 => Point(0usize.into()),
-            _ => Path(Box::new((self.zero(&(level-1, n.clone())), self.zero(&(level-1, n.clone()))))),
-        }
-    }
-}
-
-impl<T, U, V>
-Zero<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + Zero<U, V>, U: Clone
-{
-    fn zero(&self, &(level, ref dim): &(usize, U)) -> HPoint<V> {
-        use HPoint::*;
-
-        match level {
-            0 => {
-                let of: T = Construct::new();
-                Point(of.zero(&dim))
-            }
-            _ => Path(Box::new((self.zero(&(level-1, dim.clone())),
-                                self.zero(&(level-1, dim.clone()))))),
-        }
-    }
-}
-
-impl ToIndex<(usize, usize), HPoint>
-for Homotopy<Data> {
-    type N = usize;
     fn to_index(&self, &(level, n): &(usize, usize), pos: &HPoint) -> usize {
         use HPoint::*;
 
@@ -136,8 +74,8 @@ for Homotopy<Data> {
             Point(x) => *x,
             Path(ab) => {
                 let count = self.count(&(level, n));
-                let a = self.to_index(&(level-1, n), &ab.0);
-                let b = self.to_index(&(level-1, n), &ab.1);
+                let a: usize = self.to_index(&(level-1, n), &ab.0);
+                let b: usize = self.to_index(&(level-1, n), &ab.1);
                 let min = a.min(b);
                 let max = a.max(b);
                 let s: EqPair = Construct::new();
@@ -145,41 +83,6 @@ for Homotopy<Data> {
             }
         }
     }
-}
-
-impl<T, U, V>
-ToIndex<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>, U: Clone
-{
-    type N = usize;
-    fn to_index(
-        &self,
-        dim: &(usize, U),
-        pos: &HPoint<V>
-    ) -> usize {
-        use HPoint::*;
-
-        match pos {
-            Point(x) => {
-                let of: T = Construct::new();
-                of.to_index(&dim.1, x)
-            }
-            Path(ab) => {
-                let count = self.count(dim);
-                let dim_n = (dim.0-1, dim.1.clone());
-                let a = self.to_index(&dim_n, &ab.0);
-                let b = self.to_index(&dim_n, &ab.1);
-                let min = a.min(b);
-                let max = a.max(b);
-                let s: EqPair = Construct::new();
-                s.to_index(&count, &(min, max))
-            }
-        }
-    }
-}
-
-impl ToPos<(usize, usize), HPoint> for Homotopy<Data> {
-    type N = usize;
     fn to_pos(&self, &(level, n): &(usize, usize), index: usize, pos: &mut HPoint) {
         use HPoint::*;
 
@@ -211,16 +114,135 @@ impl ToPos<(usize, usize), HPoint> for Homotopy<Data> {
     }
 }
 
-impl<T, U, V>
-ToPos<(usize, U), HPoint<V>> for Homotopy<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>, U: Clone
+impl Space<BigUint> for Homotopy<Data> {
+    type Dim = (usize, BigUint);
+    type Pos = HPoint<BigUint>;
+    fn count(&self, (level, n): &Self::Dim) -> BigUint {
+        let s: EqPair = Construct::new();
+        let mut count = n.clone();
+        for _ in 0..*level {
+            count = s.count(&count);
+        }
+        count
+    }
+    fn zero(&self, (level, n): &Self::Dim) -> Self::Pos {
+        use HPoint::*;
+
+        match *level {
+            0 => Point(0usize.into()),
+            _ => Path(Box::new((
+                Space::<BigUint>::zero(self, &(level-1, n.clone())),
+                Space::<BigUint>::zero(self, &(level-1, n.clone()))
+            ))),
+        }
+    }
+    fn to_index(&self, (level, n): &Self::Dim, pos: &Self::Pos) -> BigUint {
+        use HPoint::*;
+
+        let level = *level;
+        match pos {
+            Point(x) => x.clone(),
+            Path(ab) => {
+                let count = self.count(&(level, n.clone()));
+                let a: BigUint = self.to_index(&(level-1, n.clone()), &ab.0);
+                let b: BigUint = self.to_index(&(level-1, n.clone()), &ab.1);
+                let min = a.clone().min(b.clone());
+                let max = a.max(b);
+                let s: EqPair = Construct::new();
+                s.to_index(&count, &(min, max))
+            }
+        }
+    }
+    fn to_pos(&self, (level, n): &Self::Dim, index: BigUint, pos: &mut Self::Pos) {
+        use HPoint::*;
+
+        let level = *level;
+        match level {
+            0 => {
+                *pos = Point(index);
+                return;
+            }
+            1 => {
+                let s: EqPair = Construct::new();
+                let mut ab = (0usize.into(), 0usize.into());
+                s.to_pos(n, index, &mut ab);
+                *pos = Path(Box::new((Point(ab.0), Point(ab.1))));
+                return;
+            }
+            _ => {
+                let count: BigUint = self.count(&(level, n.clone()));
+                let s: EqPair = Construct::new();
+                let mut ab = (0usize.into(), 0usize.into());
+                s.to_pos(&count, index, &mut ab);
+                let mut a: HPoint<BigUint> = Point(0usize.into());
+                let mut b: HPoint<BigUint> = Point(0usize.into());
+                self.to_pos(&(level - 1, n.clone()), ab.0, &mut a);
+                self.to_pos(&(level - 1, n.clone()), ab.1, &mut b);
+                *pos = Path(Box::new((a, b)));
+                return;
+            }
+        }
+    }
+}
+
+impl<N, T> Space<N> for Homotopy<Of<T>>
+    where T: Space<N>,
+          T::Dim: Clone,
+          EqPair<Data>: Space<N, Dim = N, Pos = (N, N)>,
+          EqPair<Of<T>>: Space<N, Dim = T::Dim, Pos = (T::Pos, T::Pos)>,
+          N: Clone +
+             Ord +
+             From<usize>,
+          Homotopy<Data>: Space<N, Dim = (usize, N), Pos = HPoint<N>>,
 {
-    type N = usize;
+    type Dim = (usize, T::Dim);
+    type Pos = HPoint<T::Pos>;
+    fn count(&self, (level, dim): &Self::Dim) -> N {
+        let of: T = Construct::new();
+        let data: Homotopy<Data> = Construct::new();
+        data.count(&(*level, of.count(dim)))
+    }
+    fn zero(&self, (level, dim): &Self::Dim) -> Self::Pos {
+        use HPoint::*;
+
+        match level {
+            0 => {
+                let of: T = Construct::new();
+                Point(of.zero(&dim))
+            }
+            _ => Path(Box::new((self.zero(&(level-1, dim.clone())),
+                                self.zero(&(level-1, dim.clone()))))),
+        }
+    }
+    fn to_index(
+        &self,
+        dim: &Self::Dim,
+        pos: &Self::Pos,
+    ) -> N {
+        use HPoint::*;
+
+        match pos {
+            Point(x) => {
+                let of: T = Construct::new();
+                of.to_index(&dim.1, x)
+            }
+            Path(ab) => {
+                let count = self.count(dim);
+                let dim_n = (dim.0-1, dim.1.clone());
+                let a = self.to_index(&dim_n, &ab.0);
+                let b = self.to_index(&dim_n, &ab.1);
+                let min = a.clone().min(b.clone());
+                let max = a.max(b);
+                let s: EqPair = Construct::new();
+                s.to_index(&count, &(min, max))
+            }
+        }
+    }
     fn to_pos(
         &self,
-        &(level, ref dim): &(usize, U),
-        index: usize,
-        pos: &mut HPoint<V>
+        &(level, ref dim): &Self::Dim,
+        index: N,
+        pos: &mut Self::Pos,
     ) {
         use HPoint::*;
 
@@ -244,10 +266,10 @@ ToPos<(usize, U), HPoint<V>> for Homotopy<Of<T>>
                 let of: T = Construct::new();
                 let count = self.count(&(level, dim.clone()));
                 let s: EqPair = Construct::new();
-                let mut ab = (0, 0);
+                let mut ab = (0usize.into(), 0usize.into());
                 s.to_pos(&count, index, &mut ab);
-                let mut a = Point(of.zero(dim));
-                let mut b = Point(of.zero(dim));
+                let mut a: HPoint<T::Pos> = Point(of.zero(dim));
+                let mut b: HPoint<T::Pos> = Point(of.zero(dim));
                 self.to_pos(&(level - 1, dim.clone()), ab.0, &mut a);
                 self.to_pos(&(level - 1, dim.clone()), ab.1, &mut b);
                 *pos = Path(Box::new((a, b)));

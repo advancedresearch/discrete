@@ -1,79 +1,57 @@
 //! Implements traits for tuples such that subspaces can be constructed.
 
-use std::ops::Mul;
+use std::ops::{Mul, Div, Sub, Add};
 
 use Construct;
-use Count;
-use ToIndex;
-use ToPos;
-use Zero;
+use space::Space;
 
 impl<T, U> Construct for (T, U)
-    where T: Construct,
-          U: Construct
+    where T: Construct, U: Construct,
 {
-    fn new() -> (T, U) {
-        (Construct::new(), Construct::new())
-    }
+    fn new() -> Self { (Construct::new(), Construct::new()) }
 }
 
-impl<T, U, V, W> Count<(V, W)> for (T, U)
-    where T: Construct + Count<V>,
-          U: Construct + Count<W, N = <T as Count<V>>::N>,
-          <T as Count<V>>::N: Mul<Output = <T as Count<V>>::N>
+impl<N, T, U> Space<N> for (T, U)
+    where T: Space<N>,
+          U: Space<N>,
+          N: Add<N, Output = N>,
+          for<'a> &'a N: Mul<&'a N, Output = N> +
+                         Div<&'a N, Output = N> +
+                         Sub<&'a N, Output = N>,
 {
-    type N = <T as Count<V>>::N;
-    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> Self::N {
+    type Dim = (T::Dim, U::Dim);
+    type Pos = (T::Pos, U::Pos);
+    fn count(&self, &(ref dim_t, ref dim_u): &Self::Dim) -> N {
         let t: T = Construct::new();
         let u: U = Construct::new();
-        t.count(dim_t) * u.count(dim_u)
+        &t.count(dim_t) * &u.count(dim_u)
     }
-}
-
-impl<T, U, V, W, X, Y> Zero<(V, W), (X, Y)> for (T, U)
-    where T: Construct + Zero<V, X>,
-          U: Construct + Zero<W, Y>
-{
-    fn zero(&self, &(ref dim_t, ref dim_u): &(V, W)) -> (X, Y) {
+    fn zero(&self, &(ref dim_t, ref dim_u): &Self::Dim) -> Self::Pos {
         let t: T = Construct::new();
         let u: U = Construct::new();
         (t.zero(dim_t), u.zero(dim_u))
     }
-}
-
-impl<T, U, V, W, X, Y> ToIndex<(V, W), (X, Y)> for (T, U)
-    where T: Construct + ToIndex<V, X, N = usize>,
-          U: Construct + Count<W, N = usize> + ToIndex<W, Y, N = usize>
-{
-    type N = usize;
     fn to_index(
         &self,
-        &(ref dim_t, ref dim_u): &(V, W),
-        &(ref pt, ref pu): &(X, Y)
-    ) -> usize {
+        &(ref dim_t, ref dim_u): &Self::Dim,
+        &(ref pt, ref pu): &Self::Pos,
+    ) -> N {
         let t: T = Construct::new();
         let u: U = Construct::new();
         let count = u.count(dim_u);
-        t.to_index(dim_t, pt) * count + u.to_index(dim_u, pu)
+        &t.to_index(dim_t, pt) * &count + u.to_index(dim_u, pu)
     }
-}
-
-impl<T, U, V, W, X, Y> ToPos<(V, W), (X, Y)> for (T, U)
-    where T: Construct + ToPos<V, X, N = usize>,
-          U: Construct + Count<W, N = usize> + ToPos<W, Y, N = usize>
-{
-    type N = usize;
     fn to_pos(
         &self,
-        &(ref dim_t, ref dim_u): &(V, W),
-        ind: usize,
-        &mut (ref mut pt, ref mut pu): &mut (X, Y)
+        &(ref dim_t, ref dim_u): &Self::Dim,
+        ind: N,
+        &mut (ref mut pt, ref mut pu): &mut Self::Pos,
     ) {
         let t: T = Construct::new();
         let u: U = Construct::new();
         let count = u.count(dim_u);
-        let x = ind / count;
+        let x = &ind / &count;
+        u.to_pos(dim_u, &ind - &(&x * &count), pu);
         t.to_pos(dim_t, x, pt);
-        u.to_pos(dim_u, ind - x * count, pu);
     }
 }

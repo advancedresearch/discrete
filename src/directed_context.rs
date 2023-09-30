@@ -1,106 +1,50 @@
 
 use std::marker::PhantomData;
-use std::ops::{Add, Mul, MulAssign};
+use std::ops::{
+    Add,
+    Mul,
+    MulAssign,
+    Sub,
+    Div,
+    Rem,
+    AddAssign,
+    DivAssign,
+    SubAssign,
+};
 
 use num::BigUint;
 
 use Construct;
 use Data;
-use Count;
 use Of;
 use NeqPair;
-use ToIndex;
-use ToPos;
-use Zero;
+use Pair;
+use space::Space;
 
 /// Same as `Context`, but for directed edges.
 pub struct DirectedContext<T = Data>(PhantomData<T>);
 
 impl<T> Construct for DirectedContext<T> {
-    fn new() -> DirectedContext<T> { DirectedContext(PhantomData) }
+    fn new() -> Self { DirectedContext(PhantomData) }
 }
 
-impl Count<Vec<usize>> for DirectedContext<Data> {
-    type N = usize;
+impl Space<usize> for DirectedContext<Data> {
+    type Dim = Vec<usize>;
+    type Pos = (Vec<usize>, usize, usize);
     fn count(&self, dim: &Vec<usize>) -> usize {
         let pair: NeqPair<Data> = Construct::new();
-        let mut sum = pair.count(&dim[0]);
+        let mut sum: usize = pair.count(&dim[0]);
         let mut prod = dim[0];
         for d in &dim[1..] {
-            sum = d * sum + pair.count(d) * prod;
+            let count: usize = pair.count(d);
+            sum = d * sum + count * prod;
             prod *= *d;
         }
         sum
     }
-}
-
-impl Count<Vec<BigUint>> for DirectedContext<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
-        let pair: NeqPair<Data> = Construct::new();
-        let mut sum = pair.count(&dim[0]);
-        let mut prod = dim[0].clone();
-        for d in &dim[1..] {
-            sum = d * sum + pair.count(d) * &prod;
-            prod *= d;
-        }
-        sum
-    }
-}
-
-impl<T, U> Count<Vec<U>> for DirectedContext<Of<T>>
-    where T: Construct + Count<U>,
-          for<'a> <T as Count<U>>::N: MulAssign +
-                Mul<Output = <T as Count<U>>::N> +
-                Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N> +
-                Add<Output = <T as Count<U>>::N>,
-          for<'a> &'a <T as Count<U>>::N: Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N>,
-          NeqPair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &Vec<U>) -> Self::N {
-        let of: T = Construct::new();
-        let pair: NeqPair<Data> = Construct::new();
-        let mut sum = pair.count(&of.count(&dim[0]));
-        let mut prod = of.count(&dim[0]);
-        for d in &dim[1..] {
-            let d = of.count(d);
-            sum = &d * &sum + pair.count(&d) * &prod;
-            prod *= d;
-        }
-        sum
-    }
-}
-
-impl Zero<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
     fn zero(&self, dim: &Vec<usize>) -> (Vec<usize>, usize, usize) {
         (vec![0; dim.len()], 0, 0)
     }
-}
-
-impl Zero<Vec<BigUint>, (Vec<BigUint>, usize, BigUint)> for DirectedContext<Data> {
-    fn zero(&self, dim: &Vec<BigUint>) -> (Vec<BigUint>, usize, BigUint) {
-        (vec![0usize.into(); dim.len()], 0, 0usize.into())
-    }
-}
-
-impl<T, U, V>
-Zero<Vec<U>, (Vec<V>, usize, V)>
-for DirectedContext<Of<T>>
-    where T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
-{
-    fn zero(&self, dim: &Vec<U>) -> (Vec<V>, usize, V) {
-        let of: T = Construct::new();
-        let mut v = Vec::with_capacity(dim.len());
-        for i in 0..dim.len() {
-            v.push(of.zero(&dim[i]));
-        }
-        (v, 0, of.zero(&dim[0]))
-    }
-}
-
-impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
-    type N = usize;
     fn to_index(
         &self, dim: &Vec<usize>,
         &(ref p, ind, b): &(Vec<usize>, usize, usize)
@@ -108,41 +52,13 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
         use Context;
 
         let context: Context<Data> = Construct::new();
-        let index = context.to_index(dim, &(p.clone(), ind, b));
+        let index: usize = context.to_index(dim, &(p.clone(), ind, b));
         if p[ind] > b {
             2 * index + 1
         } else {
             2 * index
         }
     }
-}
-
-impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)>
-for DirectedContext<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToIndex<U, V, N = usize>,
-          V: Clone
-{
-    type N = usize;
-    fn to_index(
-        &self,
-        dim: &Vec<U>,
-        &(ref p, ind, ref b): &(Vec<V>, usize, V)
-    ) -> usize {
-        use Context;
-
-        let of: T = Construct::new();
-        let context: Context<Of<T>> = Construct::new();
-        let index = context.to_index(dim, &(p.clone(), ind, b.clone()));
-        if of.to_index(&dim[ind], &p[ind]) > of.to_index(&dim[ind], b) {
-            2 * index + 1
-        } else {
-            2 * index
-        }
-    }
-}
-
-impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
-    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<usize>,
@@ -163,29 +79,131 @@ impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for DirectedContext<Data> {
     }
 }
 
-impl<T, U, V>
-ToPos<Vec<U>, (Vec<V>, usize, V)>
-for DirectedContext<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>,
-          V: Clone
-{
-    type N = usize;
+impl Space<BigUint> for DirectedContext<Data> {
+    type Dim = Vec<BigUint>;
+    type Pos = (Vec<BigUint>, usize, BigUint);
+    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
+        let pair: NeqPair<Data> = Construct::new();
+        let mut sum: BigUint = pair.count(&dim[0]);
+        let mut prod = dim[0].clone();
+        for d in &dim[1..] {
+            let count: BigUint = pair.count(d);
+            sum = d * sum + count * &prod;
+            prod *= d;
+        }
+        sum
+    }
+    fn zero(&self, dim: &Vec<BigUint>) -> (Vec<BigUint>, usize, BigUint) {
+        (vec![0usize.into(); dim.len()], 0, 0usize.into())
+    }
+    fn to_index(
+        &self, dim: &Self::Dim,
+        (p, ind, b): &Self::Pos,
+    ) -> BigUint {
+        use Context;
+
+        let context: Context<Data> = Construct::new();
+        let index: BigUint = context.to_index(dim, &(p.clone(), *ind, b.clone()));
+        if &p[*ind] > b {
+            2usize * index + 1usize
+        } else {
+            2usize * index
+        }
+    }
     fn to_pos(
         &self,
-        dim: &Vec<U>,
-        index: usize,
-        pos: &mut (Vec<V>, usize, V)
+        dim: &Self::Dim,
+        index: BigUint,
+        pos: &mut Self::Pos,
+    ) {
+        use Context;
+
+        let context: Context<Data> = Construct::new();
+        if &index % 2usize == 0usize.into() {
+            context.to_pos(dim, index / 2usize, pos);
+        } else {
+            context.to_pos(dim, (index - 1usize) / 2usize, pos);
+            std::mem::swap(&mut pos.0[pos.1], &mut pos.2);
+        }
+    }
+}
+
+impl<N, T> Space<N> for DirectedContext<Of<T>>
+    where T: Space<N>,
+          T::Pos: Clone,
+          NeqPair<Data>: Space<N, Dim = N>,
+          Pair<Data>: Space<N, Dim = N, Pos = (N, N)>,
+          for<'a> N: Clone +
+                     From<usize> +
+                     Ord +
+                     MulAssign<&'a N> +
+                     Sub<usize, Output = N> +
+                     Div<usize, Output = N> +
+                     AddAssign<&'a N> +
+                     DivAssign<&'a N> +
+                     SubAssign<&'a N> +
+                     Mul<usize, Output = N> +
+                     Add<usize, Output = N>,
+          for<'a> &'a N: Mul<&'a N, Output = N> +
+                         Add<&'a N, Output = N> +
+                         Rem<usize, Output = N> +
+                         Sub<&'a N, Output = N> +
+                         Div<&'a N, Output = N>,
+{
+    type Dim = Vec<T::Dim>;
+    type Pos = (Vec<T::Pos>, usize, T::Pos);
+    fn count(&self, dim: &Self::Dim) -> N {
+        let of: T = Construct::new();
+        let pair: NeqPair<Data> = Construct::new();
+        let mut sum: N = pair.count(&of.count(&dim[0]));
+        let mut prod: N = of.count(&dim[0]);
+        for d in &dim[1..] {
+            let d = of.count(d);
+            let count: N = pair.count(&d);
+            sum = &(&d * &sum) + &(&count * &prod);
+            prod *= &d;
+        }
+        sum
+    }
+    fn zero(&self, dim: &Self::Dim) -> Self::Pos {
+        let of: T = Construct::new();
+        let mut v = Vec::with_capacity(dim.len());
+        for i in 0..dim.len() {
+            v.push(of.zero(&dim[i]));
+        }
+        (v, 0, of.zero(&dim[0]))
+    }
+    fn to_index(
+        &self,
+        dim: &Self::Dim,
+        &(ref p, ind, ref b): &Self::Pos,
+    ) -> N {
+        use Context;
+
+        let of: T = Construct::new();
+        let context: Context<Of<T>> = Construct::new();
+        let index: N = Space::to_index(&context, dim, &(p.clone(), ind, b.clone()));
+        if of.to_index(&dim[ind], &p[ind]) > of.to_index(&dim[ind], b) {
+            let x = index * 2usize;
+            x + 1usize
+        } else {
+            index * 2usize
+        }
+    }
+    fn to_pos(
+        &self,
+        dim: &Self::Dim,
+        index: N,
+        pos: &mut Self::Pos,
     ) {
         use Context;
 
         let context: Context<Of<T>> = Construct::new();
-        if index % 2 == 0 {
-            context.to_pos(dim, index / 2, pos);
+        if &index % 2usize == 0usize.into() {
+            context.to_pos(dim, index / 2usize, pos);
         } else {
-            context.to_pos(dim, (index - 1) / 2, pos);
-            let tmp = pos.0[pos.1].clone();
-            pos.0[pos.1] = pos.2.clone();
-            pos.2 = tmp;
+            context.to_pos(dim, (index - 1usize) / 2usize, pos);
+            std::mem::swap(&mut pos.0[pos.1], &mut pos.2);
         }
     }
 }
@@ -196,9 +214,8 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<DirectedContext, Vec<usize>, (Vec<usize>, usize, usize)>();
-        is_complete::<DirectedContext<Of<Pair>>, Vec<usize>,
-            (Vec<(usize, usize)>, usize, (usize, usize))>();
+        is_complete::<usize, DirectedContext>();
+        is_complete::<usize, DirectedContext<Of<Pair>>>();
     }
 
     #[test]

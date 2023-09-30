@@ -4,101 +4,32 @@ use num::BigUint;
 
 use Construct;
 use Data;
-use Count;
 use Of;
-use ToIndex;
-use ToPos;
-use Zero;
+use space::Space;
 
 /// Dimension is natural number, position is (a, b).
 /// Represents all directional pairs that has not same element for `a` and `b`.
 pub struct NeqPair<T = Data>(PhantomData<T>);
 
 impl<T> Construct for NeqPair<T> {
-    fn new() -> NeqPair<T> { NeqPair(PhantomData) }
+    fn new() -> Self { NeqPair(PhantomData) }
 }
 
-impl Count<usize> for NeqPair<Data> {
-    type N = usize;
+impl Space<usize> for NeqPair<Data> {
+    type Dim = usize;
+    type Pos = (usize, usize);
     fn count(&self, dim: &usize) -> usize { dim * (dim - 1) }
-}
-
-impl Count<BigUint> for NeqPair<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &BigUint) -> BigUint {
-        let _1: BigUint = 1usize.into();
-        dim * (dim - _1)
-    }
-}
-
-impl<T, U> Count<U> for NeqPair<Of<T>>
-    where
-        T: Construct + Count<U>,
-        NeqPair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &U) -> Self::N {
-        let of: T = Construct::new();
-        let data: NeqPair<Data> = Construct::new();
-        data.count(&of.count(dim))
-    }
-}
-
-impl Zero<usize, (usize, usize)> for NeqPair<Data> {
     fn zero(&self, _dim: &usize) -> (usize, usize) { (0, 0) }
-}
-
-impl Zero<BigUint, (BigUint, BigUint)> for NeqPair<Data> {
-    fn zero(&self, _dim: &BigUint) -> (BigUint, BigUint) { (0usize.into(), 0usize.into()) }
-}
-
-impl<T, U, V>
-Zero<U, (V, V)> for NeqPair<Of<T>>
-    where
-        T: Construct + Zero<U, V>
-{
-    fn zero(&self, dim: &U) -> (V, V) {
-        let of: T = Construct::new();
-        (of.zero(dim), of.zero(dim))
-    }
-}
-
-impl ToIndex<usize, (usize, usize)>
-for NeqPair<Data> {
-    type N = usize;
     fn to_index(&self, dim: &usize, &(a, b): &(usize, usize)) -> usize {
         use Pair;
 
         let pair: Pair<Data> = Construct::new();
         if a < b {
-            pair.to_index(dim, &(a, b)) * 2
+            <Pair as Space<usize>>::to_index(&pair, dim, &(a, b)) * 2
         } else {
-            pair.to_index(dim, &(b, a)) * 2 + 1
+            <Pair as Space<usize>>::to_index(&pair, dim, &(b, a)) * 2 + 1
         }
     }
-}
-
-impl<T, U, V>
-ToIndex<U, (V, V)> for NeqPair<Of<T>>
-    where
-        T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>
-{
-    type N = usize;
-    fn to_index(
-        &self,
-        dim: &U,
-        &(ref min, ref max): &(V, V)
-    ) -> usize {
-        let of: T = Construct::new();
-        let data: NeqPair<Data> = Construct::new();
-        let min = of.to_index(dim, min);
-        let max = of.to_index(dim, max);
-        data.to_index(&self.count(dim), &(min, max))
-    }
-}
-
-impl ToPos<usize, (usize, usize)> for NeqPair<Data> {
-    type N = usize;
     fn to_pos(&self, dim: &usize, index: usize, pos: &mut (usize, usize)) {
         use Pair;
 
@@ -114,22 +45,72 @@ impl ToPos<usize, (usize, usize)> for NeqPair<Data> {
     }
 }
 
-impl<T, U, V>
-ToPos<U, (V, V)> for NeqPair<Of<T>>
-    where
-        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
+impl Space<BigUint> for NeqPair<Data> {
+    type Dim = BigUint;
+    type Pos = (BigUint, BigUint);
+    fn count(&self, dim: &BigUint) -> BigUint {
+        dim * (dim - 1usize)
+    }
+    fn zero(&self, _dim: &BigUint) -> (BigUint, BigUint) { (0usize.into(), 0usize.into()) }
+    fn to_index(&self, dim: &Self::Dim, (a, b): &Self::Pos) -> BigUint {
+        use Pair;
+
+        let pair: Pair<Data> = Construct::new();
+        if a < b {
+            <Pair as Space<BigUint>>::to_index(&pair, dim, &(a.clone(), b.clone())) * 2usize
+        } else {
+            <Pair as Space<BigUint>>::to_index(&pair, dim, &(b.clone(), a.clone())) * 2usize + 1usize
+        }
+    }
+    fn to_pos(&self, dim: &Self::Dim, index: BigUint, pos: &mut Self::Pos) {
+        use Pair;
+
+        let pair: Pair<Data> = Construct::new();
+        if &index % 2usize == 0usize.into() {
+            pair.to_pos(dim, index / 2usize, pos);
+        } else {
+            pair.to_pos(dim, (index - 1usize) / 2usize, pos);
+            std::mem::swap(&mut pos.0, &mut pos.1);
+        }
+    }
+}
+
+impl<N, T> Space<N> for NeqPair<Of<T>>
+    where T: Space<N>,
+          NeqPair<Data>: Space<N, Dim = N, Pos = (N, N)>,
 {
-    type N = usize;
+    type Dim = T::Dim;
+    type Pos = (T::Pos, T::Pos);
+    fn count(&self, dim: &Self::Dim) -> N {
+        let of: T = Construct::new();
+        let data: NeqPair<Data> = Construct::new();
+        data.count(&of.count(dim))
+    }
+    fn zero(&self, dim: &Self::Dim) -> Self::Pos {
+        let of: T = Construct::new();
+        (of.zero(dim), of.zero(dim))
+    }
+    fn to_index(
+        &self,
+        dim: &Self::Dim,
+        &(ref min, ref max): &Self::Pos,
+    ) -> N {
+        let of: T = Construct::new();
+        let data: NeqPair<Data> = Construct::new();
+        let min = of.to_index(dim, min);
+        let max = of.to_index(dim, max);
+        data.to_index(&self.count(dim), &(min, max))
+    }
     fn to_pos(
         &self,
-        dim: &U,
-        index: usize,
-        &mut (ref mut min, ref mut max): &mut (V, V)
+        dim: &Self::Dim,
+        index: N,
+        &mut (ref mut min, ref mut max): &mut Self::Pos,
     ) {
         let of: T = Construct::new();
         let data: NeqPair<Data> = Construct::new();
         let count = of.count(dim);
-        let mut pair = (0, 0);
+        let mut pair = data.zero(&count);
         data.to_pos(&count, index, &mut pair);
         let (pair_min, pair_max) = pair;
         of.to_pos(dim, pair_min, min);
@@ -143,9 +124,8 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<NeqPair, usize, (usize, usize)>();
-        is_complete::<NeqPair<Of<NeqPair>>, usize,
-            ((usize, usize), (usize, usize))>();
+        is_complete::<usize, NeqPair>();
+        is_complete::<usize, NeqPair<Of<NeqPair>>>();
     }
 
     #[test]
