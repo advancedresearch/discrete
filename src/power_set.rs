@@ -1,76 +1,33 @@
 use std::marker::PhantomData;
+use std::convert::TryInto;
+use std::fmt::Debug;
+
+use std::ops::{BitOrAssign, Rem, Shr};
 
 use num::BigUint;
 use num::pow::Pow;
 
 use Construct;
 use Of;
-use ToPos;
-use Count;
 use Data;
-use ToIndex;
-use Zero;
+use space::Space;
 
 /// Dimension is natural number, position is a list of numbers.
 pub struct PowerSet<T = Data>(PhantomData<T>);
 
 impl<T> Construct for PowerSet<T> {
-    fn new() -> PowerSet<T> { PowerSet(PhantomData) }
+    fn new() -> Self { PowerSet(PhantomData) }
 }
 
-impl Count<usize> for PowerSet<Data> {
-    type N = usize;
+impl Space<usize> for PowerSet<Data> {
+    type Dim = usize;
+    type Pos = Vec<usize>;
     fn count(&self, dim: &usize) -> usize {
         1 << *dim
     }
-}
-
-impl Count<BigUint> for PowerSet<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &BigUint) -> BigUint {
-        use std::convert::TryInto;
-
-        let _two: BigUint = 2usize.into();
-        let dim: u32 = dim.try_into().unwrap();
-        _two.pow(dim)
-    }
-}
-
-impl<T, U> Count<U> for PowerSet<Of<T>>
-    where
-        T: Construct + Count<U>,
-        <T as Count<U>>::N: From<usize> + Pow<<T as Count<U>>::N, Output = <T as Count<U>>::N>,
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &U) -> Self::N {
-        let _two: Self::N = 2usize.into();
-        let of: T = Construct::new();
-        _two.pow(of.count(dim))
-    }
-}
-
-impl Zero<usize, Vec<usize>> for PowerSet<Data> {
     fn zero(&self, _dim: &usize) -> Vec<usize> {
         vec![]
     }
-}
-
-impl Zero<BigUint, Vec<BigUint>> for PowerSet<Data> {
-    fn zero(&self, _dim: &BigUint) -> Vec<BigUint> {
-        vec![]
-    }
-}
-
-impl<T, U, V> Zero<U, Vec<V>> for PowerSet<Of<T>>
-    where T: Construct + Count<U> + Zero<U, V>
-{
-    fn zero(&self, _dim: &U) -> Vec<V> {
-        vec![]
-    }
-}
-
-impl ToIndex<usize, Vec<usize>> for PowerSet<Data> {
-    type N = usize;
     fn to_index(
         &self,
         _dim: &usize,
@@ -82,31 +39,6 @@ impl ToIndex<usize, Vec<usize>> for PowerSet<Data> {
         }
         index
     }
-}
-
-impl<T, U, V>
-ToIndex<U, Vec<V>> for PowerSet<Of<T>>
-    where
-        T: Construct + ToIndex<U, V, N = usize>,
-        V: Clone
-{
-    type N = usize;
-    fn to_index(
-        &self,
-        dim: &U,
-        pos: &Vec<V>
-    ) -> usize {
-        let of: T = Construct::new();
-        let mut index = 0;
-        for i in pos.iter() {
-            index |= 1 << of.to_index(dim, i);
-        }
-        index
-    }
-}
-
-impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
-    type N = usize;
     fn to_pos(
         &self,
         dim: &usize,
@@ -122,26 +54,100 @@ impl ToPos<usize, Vec<usize>> for PowerSet<Data> {
     }
 }
 
-impl<T, U, V>
-ToPos<U, Vec<V>>
-for PowerSet<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>
-{
-    type N = usize;
+impl Space<BigUint> for PowerSet<Data> {
+    type Dim = BigUint;
+    type Pos = Vec<BigUint>;
+    fn count(&self, dim: &BigUint) -> BigUint {
+        let _two: BigUint = 2usize.into();
+        let dim: u32 = dim.try_into().unwrap();
+        _two.pow(dim)
+    }
+    fn zero(&self, _dim: &BigUint) -> Vec<BigUint> {
+        vec![]
+    }
+    fn to_index(
+        &self,
+        _dim: &Self::Dim,
+        pos: &Self::Pos,
+    ) -> BigUint {
+        let mut index: BigUint = 0usize.into();
+        let ref _2: BigUint = 2usize.into();
+        for i in pos {
+            index |= _2.pow(i.try_into().unwrap());
+        }
+        index
+    }
     fn to_pos(
         &self,
-        dim: &U,
-        index: usize,
-        pos: &mut Vec<V>
+        dim: &Self::Dim,
+        index: BigUint,
+        pos: &mut Self::Pos,
+    ) {
+        pos.clear();
+        let dim: u32 = dim.try_into().unwrap();
+        let ref _2: BigUint = 2u32.into();
+        let ref _1: BigUint = 1u32.into();
+        for i in 0u32..dim {
+            if &((&index >> i) % _2) == _1 {
+                pos.push(i.into());
+            }
+        }
+    }
+}
+
+impl<N, T> Space<N> for PowerSet<Of<T>>
+    where T: Space<N>,
+          N: Clone +
+             From<usize> +
+             PartialEq +
+             TryInto<u32> +
+             BitOrAssign<N> +
+             Rem<usize, Output = N> +
+             Pow<u32, Output = N> +
+             Shr<u32, Output = N>,
+          <N as TryInto<u32>>::Error: Debug,
+{
+    type Dim = T::Dim;
+    type Pos = Vec<T::Pos>;
+    fn count(&self, dim: &Self::Dim) -> N {
+        let _two: N = 2usize.into();
+        let of: T = Construct::new();
+        let count = of.count(dim);
+        _two.pow(count.try_into().unwrap())
+    }
+    fn zero(&self, _dim: &Self::Dim) -> Self::Pos {
+        vec![]
+    }
+    fn to_index(
+        &self,
+        dim: &Self::Dim,
+        pos: &Self::Pos,
+    ) -> N {
+        let of: T = Construct::new();
+        let mut index: N = 0usize.into();
+        let _2: N = 2usize.into();
+        for i in pos {
+            let i: N = of.to_index(dim, i);
+            index |= _2.clone().pow(i.try_into().unwrap());
+        }
+        index
+    }
+    fn to_pos(
+        &self,
+        dim: &Self::Dim,
+        index: N,
+        pos: &mut Self::Pos,
     ) {
         let of: T = Construct::new();
         let count = of.count(dim);
         pos.clear();
-        pos.reserve_exact(count);
-        for j in 0..count {
-            if ((index >> j) & 1) == 1 {
+        let count: u32 = count.try_into().unwrap();
+        pos.reserve_exact(count as usize);
+        let ref _1: N = 1usize.into();
+        for j in 0u32..count {
+            if &((index.clone() >> j) % 2) == _1 {
                 let mut p = of.zero(dim);
-                of.to_pos(dim, j, &mut p);
+                of.to_pos(dim, (j as usize).into(), &mut p);
                 pos.push(p);
             }
         }
@@ -154,8 +160,8 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<PowerSet, usize, Vec<usize>>();
-        is_complete::<PowerSet<Of<Pair>>, usize, Vec<(usize, usize)>>();
+        is_complete::<usize, PowerSet>();
+        is_complete::<usize, PowerSet<Of<Pair>>>();
     }
 
     #[test]

@@ -1,29 +1,34 @@
 
 use std::marker::PhantomData;
-use std::ops::{AddAssign, MulAssign};
+use std::ops::{
+    AddAssign,
+    MulAssign,
+    Sub,
+    Mul,
+    SubAssign,
+    DivAssign,
+    Div,
+};
 use std::convert::TryInto;
+use std::fmt::Debug;
 
 use num::BigUint;
 
 use Construct;
-use Count;
 use Data;
 use Of;
-use ToPos;
-use ToIndex;
-use Zero;
+use space::Space;
 
 /// Dimension is natural number, position is a list of numbers.
 pub struct Permutation<T = Data>(PhantomData<T>);
 
 impl<T> Construct for Permutation<T> {
-    fn new() -> Permutation<T> {
-        Permutation(PhantomData)
-    }
+    fn new() -> Self { Permutation(PhantomData) }
 }
 
-impl Count<usize> for Permutation<Data> {
-    type N = usize;
+impl Space<usize> for Permutation<Data> {
+    type Dim = usize;
+    type Pos = Vec<usize>;
     fn count(&self, dim: &usize) -> usize {
         let mut res = 1;
         for x in 1..dim + 1 {
@@ -31,77 +36,9 @@ impl Count<usize> for Permutation<Data> {
         }
         res
     }
-}
-
-impl Count<BigUint> for Permutation<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &BigUint) -> BigUint {
-        let _1: BigUint = 1usize.into();
-        let mut res: BigUint = _1.clone();
-        let mut x = _1.clone();
-        loop {
-            if &x > dim {break}
-            res *= &x;
-            x += &_1;
-        }
-        res
-    }
-}
-
-impl<T, U> Count<U> for Permutation<Of<T>>
-    where
-        T: Construct + Count<U>,
-        for<'a> <T as Count<U>>::N: From<usize> + Clone + Ord +
-            AddAssign<&'a <T as Count<U>>::N> +
-            MulAssign<&'a <T as Count<U>>::N>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &U) -> Self::N {
-        let of: T = Construct::new();
-        let _1: Self::N = 1usize.into();
-        let mut x = _1.clone();
-        let mut res = _1.clone();
-        let of_count = of.count(dim);
-        loop {
-            if &x > &of_count {break}
-            res *= &x;
-            x += &_1;
-        }
-        res
-    }
-}
-
-impl Zero<usize, Vec<usize>> for Permutation<Data> {
     fn zero(&self, dim: &usize) -> Vec<usize> {
         vec![0; *dim]
     }
-}
-
-impl Zero<BigUint, Vec<BigUint>> for Permutation<Data> {
-    fn zero(&self, dim: &BigUint) -> Vec<BigUint> {
-        let dim: usize = dim.try_into().unwrap();
-        vec![0usize.into(); dim]
-    }
-}
-
-impl<T, U, V> Zero<U, Vec<V>> for Permutation<Of<T>>
-    where
-        T: Construct + Count<U> + Zero<U, V>,
-        <T as Count<U>>::N: TryInto<usize>,
-        V: Clone
-{
-    fn zero(&self, dim: &U) -> Vec<V> {
-        let of: T = Construct::new();
-        let count = match of.count(dim).try_into() {
-            Ok(x) => x,
-            Err(_) => panic!("Out of range"),
-        };
-        vec![of.zero(dim); count]
-    }
-}
-
-impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
-    type N = usize;
     fn to_index(&self, dim: &usize, pos: &Vec<usize>) -> usize {
         let mut index = 0;
         let mut count = 1;
@@ -112,34 +49,6 @@ impl ToIndex<usize, Vec<usize>> for Permutation<Data> {
         }
         index
     }
-}
-
-impl<T, U, V> ToIndex<U, Vec<V>> for Permutation<Of<T>>
-    where
-        T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>,
-        V: Clone
-{
-    type N = usize;
-    fn to_index(&self, dim: &U, pos: &Vec<V>) -> usize {
-        let of: T = Construct::new();
-        let mut index = 0;
-        let dim_count = of.count(dim);
-        let mut count = 1;
-        for (i, x) in pos.iter()
-            .map(|x| of.to_index(dim, x))
-            .enumerate().rev() {
-            let lower = pos[..i].iter()
-                .map(|y| of.to_index(dim, y))
-                .filter(|&y| y < x).count();
-            index += count * (x - lower);
-            count *= dim_count - i;
-        }
-        index
-    }
-}
-
-impl ToPos<usize, Vec<usize>> for Permutation<Data> {
-    type N = usize;
     fn to_pos(&self, dim: &usize, mut index: usize, pos: &mut Vec<usize>) {
         unsafe { pos.set_len(0); }
 
@@ -160,31 +69,136 @@ impl ToPos<usize, Vec<usize>> for Permutation<Data> {
     }
 }
 
-impl<T, U, V> ToPos<U, Vec<V>> for Permutation<Of<T>>
-    where
-        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>
-{
-    type N = usize;
-    fn to_pos(&self, dim: &U, mut index: usize, pos: &mut Vec<V>) {
-        let of: T = Construct::new();
-        let of_count = of.count(dim);
+impl Space<BigUint> for Permutation<Data> {
+    type Dim = BigUint;
+    type Pos = Vec<BigUint>;
+    fn count(&self, dim: &BigUint) -> BigUint {
+        let _1: BigUint = 1usize.into();
+        let mut res: BigUint = _1.clone();
+        let mut x = _1.clone();
+        loop {
+            if &x > dim {break}
+            res *= &x;
+            x += &_1;
+        }
+        res
+    }
+    fn zero(&self, dim: &BigUint) -> Vec<BigUint> {
+        let dim: usize = dim.try_into().unwrap();
+        vec![0usize.into(); dim]
+    }
+    fn to_index(&self, dim: &Self::Dim, pos: &Self::Pos) -> BigUint {
+        let mut index: BigUint = 0usize.into();
+        let mut count: BigUint = 1usize.into();
+        for (i, x) in pos.iter().enumerate().rev() {
+            let lower = pos[..i].iter().filter(|&y| y < x).count();
+            index += &count * (x - lower);
+            count *= dim - i;
+        }
+        index
+    }
+    fn to_pos(&self, dim: &Self::Dim, mut index: BigUint, pos: &mut Self::Pos) {
         pos.clear();
 
-        let mut count = 1;
+        let mut count: BigUint = 1usize.into();
+        let dim: usize = dim.try_into().unwrap();
+        for (j, x) in (1usize..dim + 1).enumerate() {
+            count *= x;
+            pos.push(j.into());
+        }
+
+        let dim: usize = dim.try_into().unwrap();
+        for i in 0..dim {
+            let block = &count / (dim - i);
+            let ind: BigUint = &index / &block;
+            let item = pos.remove((&ind).try_into().unwrap());
+            pos.push(item);
+            count /= dim - i;
+            index -= &ind * block;
+        }
+    }
+}
+
+impl<N, T> Space<N> for Permutation<Of<T>>
+    where T: Space<N>,
+          T::Pos: Clone,
+          N: Clone +
+             From<usize> +
+             TryInto<usize> +
+             for<'a> AddAssign<&'a N> +
+             for<'a> MulAssign<&'a N> +
+             Sub<usize, Output = N> +
+             SubAssign +
+             DivAssign<usize> +
+             MulAssign<usize> +
+             PartialOrd,
+          <N as TryInto<usize>>::Error: Debug,
+          for<'a> &'a N: Sub<usize, Output = N> +
+                         Mul<&'a N, Output = N> +
+                         Div<usize, Output = N> +
+                         Div<&'a N, Output = N> +,
+          <N as TryInto<usize>>::Error: Debug,
+{
+    type Dim = T::Dim;
+    type Pos = Vec<T::Pos>;
+    fn count(&self, dim: &Self::Dim) -> N {
+        let of: T = Construct::new();
+        let _1: N = 1usize.into();
+        let mut x = _1.clone();
+        let mut res = _1.clone();
+        let of_count = of.count(dim);
+        loop {
+            if &x > &of_count {break}
+            res *= &x;
+            x += &_1;
+        }
+        res
+    }
+    fn zero(&self, dim: &Self::Dim) -> Self::Pos {
+        let of: T = Construct::new();
+        let count = match of.count(dim).try_into() {
+            Ok(x) => x,
+            Err(_) => panic!("Out of range"),
+        };
+        vec![of.zero(dim); count]
+    }
+    fn to_index(&self, dim: &Self::Dim, pos: &Self::Pos) -> N {
+        let of: T = Construct::new();
+        let mut index: N = 0usize.into();
+        let dim_count = of.count(dim);
+        let mut count: N = 1usize.into();
+        for (i, x) in pos.iter()
+            .map(|x| of.to_index(dim, x))
+            .enumerate().rev() {
+            let lower = pos[..i].iter()
+                .map(|y| of.to_index(dim, y))
+                .filter(|y| y < &x).count();
+            index += &(&count * &(x - lower));
+            count *= &(&dim_count - i);
+        }
+        index
+    }
+    fn to_pos(&self, dim: &Self::Dim, mut index: N, pos: &mut Self::Pos) {
+        let of: T = Construct::new();
+        let of_count: usize = of.count(dim).try_into().unwrap();
+        pos.clear();
+
+        let mut count: N = 1usize.into();
         for (j, x) in (1..of_count + 1).enumerate() {
             count *= x;
-            let mut new_pos: V = of.zero(&dim);
-            of.to_pos(dim, j, &mut new_pos);
+            let mut new_pos: T::Pos = of.zero(&dim);
+            of.to_pos(dim, j.into(), &mut new_pos);
             pos.push(new_pos);
         }
 
         for i in 0..of_count {
-            let block = count / (of_count - i);
-            let ind = index / block;
-            let item = pos.remove(ind);
+            let diff = of_count - i;
+            let block = &count / diff;
+            let ind = &index / &block;
+            index -= &ind * &block;
+            let item = pos.remove(ind.try_into().unwrap());
             pos.push(item);
-            count /= of_count - i;
-            index -= ind * block;
+            count /= diff;
         }
     }
 }
@@ -195,8 +209,8 @@ mod test {
 
     #[test]
     fn features() {
-        is_complete::<Permutation, usize, Vec<usize>>();
-        is_complete::<Permutation<Of<Pair>>, usize, Vec<(usize, usize)>>();
+        is_complete::<usize, Permutation>();
+        is_complete::<usize, Permutation<Of<Pair>>>();
     }
 
     #[test]

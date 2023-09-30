@@ -4,93 +4,24 @@ use num::BigUint;
 
 use Construct;
 use Data;
-use Count;
 use Of;
-use ToIndex;
-use ToPos;
-use Zero;
+use space::Space;
 
 /// Dimension is natural number, position is (min, max).
 pub struct EqPair<T = Data>(PhantomData<T>);
 
 impl<T> Construct for EqPair<T> {
-    fn new() -> EqPair<T> { EqPair(PhantomData) }
+    fn new() -> Self { EqPair(PhantomData) }
 }
 
-impl Count<usize> for EqPair<Data> {
-    type N = usize;
+impl Space<usize> for EqPair<Data> {
+    type Dim = usize;
+    type Pos = (usize, usize);
     fn count(&self, dim: &usize) -> usize { dim * (dim + 1) / 2 }
-}
-
-impl Count<BigUint> for EqPair<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &BigUint) -> BigUint {
-        let _1: BigUint = 1usize.into();
-        let _2: BigUint = 2usize.into();
-        dim * (dim + _1) / _2
-    }
-}
-
-impl<T, U> Count<U> for EqPair<Of<T>>
-    where
-        T: Construct + Count<U>,
-        EqPair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &U) -> Self::N {
-        let of: T = Construct::new();
-        let data: EqPair<Data> = Construct::new();
-        data.count(&of.count(dim))
-    }
-}
-
-
-impl Zero<usize, (usize, usize)> for EqPair<Data> {
     fn zero(&self, _dim: &usize) -> (usize, usize) { (0, 0) }
-}
-
-impl Zero<BigUint, (BigUint, BigUint)> for EqPair<Data> {
-    fn zero(&self, _dim: &BigUint) -> (BigUint, BigUint) { (0usize.into(), 0usize.into()) }
-}
-
-impl<T, U, V>
-Zero<U, (V, V)> for EqPair<Of<T>>
-    where T: Construct + Zero<U, V>
-{
-    fn zero(&self, dim: &U) -> (V, V) {
-        let of: T = Construct::new();
-        (of.zero(dim), of.zero(dim))
-    }
-}
-
-impl ToIndex<usize, (usize, usize)>
-for EqPair<Data> {
-    type N = usize;
     fn to_index(&self, _dim: &usize, &(min, max): &(usize, usize)) -> usize {
         min + max * (max + 1) / 2
     }
-}
-
-impl<T, U, V>
-ToIndex<U, (V, V)> for EqPair<Of<T>>
-    where T: Construct + ToIndex<U, V, N = usize> + Count<U, N = usize>
-{
-    type N = usize;
-    fn to_index(
-        &self,
-        dim: &U,
-        &(ref min, ref max): &(V, V)
-    ) -> usize {
-        let of: T = Construct::new();
-        let data: EqPair<Data> = Construct::new();
-        let min = of.to_index(dim, min);
-        let max = of.to_index(dim, max);
-        data.to_index(&self.count(dim), &(min, max))
-    }
-}
-
-impl ToPos<usize, (usize, usize)> for EqPair<Data> {
-    type N = usize;
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut (usize, usize)) {
         let max = ((-1f64 + (8f64 * index as f64 + 1f64).sqrt()) / 2f64) as usize;
         let min = index - max * (max + 1) / 2;
@@ -98,21 +29,57 @@ impl ToPos<usize, (usize, usize)> for EqPair<Data> {
     }
 }
 
-impl<T, U, V>
-ToPos<U, (V, V)> for EqPair<Of<T>>
-    where T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize>
+impl Space<BigUint> for EqPair<Data> {
+    type Dim = BigUint;
+    type Pos = (BigUint, BigUint);
+    fn count(&self, dim: &Self::Dim) -> BigUint { dim * (dim + 1usize) / 2usize }
+    fn zero(&self, _dim: &Self::Dim) -> Self::Pos { (0usize.into(), 0usize.into()) }
+    fn to_index(&self, _dim: &Self::Dim, (min, max): &Self::Pos) -> BigUint {
+        min + max * (max + 1usize) / 2usize
+    }
+    fn to_pos(&self, _dim: &Self::Dim, index: BigUint, pos: &mut Self::Pos) {
+        let max: BigUint = ((8usize * &index + 1usize).sqrt() - 1usize) / 2usize;
+        let min: BigUint = index - &max * (&max + 1usize) / 2usize;
+        *pos = (min, max)
+    }
+}
+
+impl<N, T> Space<N> for EqPair<Of<T>>
+    where T: Space<N>,
+          EqPair<Data>: Space<N, Dim = N, Pos = (N, N)>,
 {
-    type N = usize;
+    type Dim = T::Dim;
+    type Pos = (T::Pos, T::Pos);
+    fn count(&self, dim: &Self::Dim) -> N {
+        let of: T = Construct::new();
+        let data: EqPair<Data> = Construct::new();
+        data.count(&of.count(dim))
+    }
+    fn zero(&self, dim: &Self::Dim) -> Self::Pos {
+        let of: T = Construct::new();
+        (of.zero(dim), of.zero(dim))
+    }
+    fn to_index(
+        &self,
+        dim: &Self::Dim,
+        &(ref min, ref max): &Self::Pos,
+    ) -> N {
+        let of: T = Construct::new();
+        let data: EqPair<Data> = Construct::new();
+        let min = of.to_index(dim, min);
+        let max = of.to_index(dim, max);
+        data.to_index(&self.count(dim), &(min, max))
+    }
     fn to_pos(
         &self,
-        dim: &U,
-        index: usize,
-        &mut (ref mut min, ref mut max): &mut (V, V)
+        dim: &Self::Dim,
+        index: N,
+        &mut (ref mut min, ref mut max): &mut Self::Pos,
     ) {
         let of: T = Construct::new();
         let data: EqPair<Data> = Construct::new();
         let count = of.count(dim);
-        let mut pair = (0, 0);
+        let mut pair = data.zero(&count);
         data.to_pos(&count, index, &mut pair);
         let (pair_min, pair_max) = pair;
         of.to_pos(dim, pair_min, min);
@@ -126,9 +93,8 @@ mod tests {
 
     #[test]
     fn features() {
-        is_complete::<EqPair, usize, (usize, usize)>();
-        is_complete::<EqPair<Of<EqPair>>, usize,
-            ((usize, usize), (usize, usize))>();
+        is_complete::<usize, EqPair>();
+        is_complete::<usize, EqPair<Of<EqPair>>>();
     }
 
     #[test]

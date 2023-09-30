@@ -1,12 +1,9 @@
 use std::marker::PhantomData;
 
-use std::ops::Add;
+use std::ops::{Add, Sub};
 
 use Construct;
-use Count;
-use ToIndex;
-use ToPos;
-use Zero;
+use space::Space;
 
 /// Selects between two spaces.
 pub struct Either<T, U>(PhantomData<T>, PhantomData<U>);
@@ -20,47 +17,33 @@ pub enum Select<T, U> {
     Snd(U),
 }
 
-impl<T, U> Construct for Either<T, U>
-    where T: Construct,
-          U: Construct
-{
-    fn new() -> Either<T, U> {
-        Either(PhantomData, PhantomData)
-    }
+impl<T, U> Construct for Either<T, U> {
+    fn new() -> Self { Either(PhantomData, PhantomData) }
 }
 
-impl<T, U, V, W> Count<(V, W)> for Either<T, U>
-    where T: Construct + Count<V>,
-          U: Construct + Count<W, N = <T as Count<V>>::N>,
-          <T as Count<V>>::N: Add<Output = <T as Count<V>>::N>
+impl<T, U, N> Space<N> for Either<T, U>
+    where T: Space<N>,
+          U: Space<N>,
+          N: Add<Output = N> +
+             Sub<Output = N> +
+             PartialOrd,
 {
-    type N = <T as Count<V>>::N;
-    fn count(&self, &(ref dim_t, ref dim_u): &(V, W)) -> Self::N {
+    type Dim = (T::Dim, U::Dim);
+    type Pos = Select<T::Pos, U::Pos>;
+    fn count(&self, &(ref dim_t, ref dim_u): &Self::Dim) -> N {
         let t: T = Construct::new();
         let u: U = Construct::new();
         t.count(dim_t) + u.count(dim_u)
     }
-}
-
-impl<T, U, V, W, X, Y> Zero<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Zero<V, X>
-{
-    fn zero(&self, &(ref dim_t, _): &(V, W)) -> Select<X, Y> {
+    fn zero(&self, &(ref dim_t, _): &Self::Dim) -> Self::Pos {
         let t: T = Construct::new();
         Select::Fst(t.zero(dim_t))
     }
-}
-
-impl<T, U, V, W, X, Y> ToIndex<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Count<V, N = usize> + ToIndex<V, X, N = usize>,
-          U: Construct + ToIndex<W, Y, N = usize>
-{
-    type N = usize;
     fn to_index(
         &self,
-        &(ref dim_t, ref dim_u): &(V, W),
-        s: &Select<X, Y>
-    ) -> usize {
+        &(ref dim_t, ref dim_u): &Self::Dim,
+        s: &Self::Pos
+    ) -> N {
         let t: T = Construct::new();
         let u: U = Construct::new();
         match *s {
@@ -73,18 +56,11 @@ impl<T, U, V, W, X, Y> ToIndex<(V, W), Select<X, Y>> for Either<T, U>
             }
         }
     }
-}
-
-impl<T, U, V, W, X, Y> ToPos<(V, W), Select<X, Y>> for Either<T, U>
-    where T: Construct + Count<V, N = usize> + ToPos<V, X, N = usize> + Zero<V, X>,
-          U: Construct + ToPos<W, Y, N = usize> + Zero<W, Y>
-{
-    type N = usize;
     fn to_pos(
         &self,
-        &(ref dim_t, ref dim_u): &(V, W),
-        ind: usize,
-        pos: &mut Select<X, Y>
+        &(ref dim_t, ref dim_u): &Self::Dim,
+        ind: N,
+        pos: &mut Self::Pos,
     ) {
         let t: T = Construct::new();
         let u: U = Construct::new();

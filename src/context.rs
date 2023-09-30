@@ -1,17 +1,23 @@
 
 use std::marker::PhantomData;
-use std::ops::{Add, Mul, MulAssign};
+use std::ops::{
+    Add,
+    Div,
+    Mul,
+    MulAssign,
+    SubAssign,
+    DivAssign,
+    Sub,
+    AddAssign,
+};
 
 use num::BigUint;
 
 use Construct;
 use Data;
-use Count;
 use Of;
 use Pair;
-use ToIndex;
-use ToPos;
-use Zero;
+use space::Space;
 
 /// A discrete space that can model spatial operations over arbitrary states,
 /// therefore useful for context analysis.
@@ -49,7 +55,30 @@ fn subspace_offset(v: &[usize], ind: usize) -> usize {
             if i == j { continue; }
             prod *= v[j];
         }
-        sum += pair.count(&v[i]) * prod;
+        sum += <Pair as Space<usize>>::count(&pair, &v[i]) * prod;
+    }
+    sum
+}
+
+/// Computes subspace offset from which index that changes.
+/// The space is divided into N subspaces,
+/// because only one axis can change at a time.
+///
+/// ```ignore
+/// [(a, x), b, c]
+/// [a, (b, x), c]
+/// [a, b, (c, x)]
+/// ```
+fn biguint_subspace_offset(v: &[BigUint], ind: usize) -> BigUint {
+    let pair: Pair<Data> = Construct::new();
+    let mut sum: BigUint = 0usize.into();
+    for i in 0..ind {
+        let mut prod: BigUint = 1usize.into();
+        for j in 0..v.len() {
+            if i == j { continue; }
+            prod *= &v[j];
+        }
+        sum += <Pair as Space<BigUint>>::count(&pair, &v[i]) * prod;
     }
     sum
 }
@@ -67,7 +96,7 @@ fn ind_from_index(v: &[usize], index: usize) -> (usize, usize) {
             if i == j { continue; }
             prod *= v[j];
         }
-        let add = pair.count(&v[i]) * prod;
+        let add = <Pair as Space<usize>>::count(&pair, &v[i]) * prod;
         if sum + add > index { return (i, sum); }
         sum += add;
     }
@@ -87,100 +116,35 @@ fn biguint_ind_from_index(v: &[BigUint], index: &BigUint) -> (usize, BigUint) {
             if i == j { continue; }
             prod *= &v[j];
         }
-        let add = pair.count(&v[i]) * prod;
+        let add = <Pair as Space<BigUint>>::count(&pair, &v[i]) * prod;
         if &(&sum + &add) > index { return (i, sum); }
         sum += add;
     }
     (v.len(), sum)
 }
 
+
 impl<T> Construct for Context<T> {
     fn new() -> Context<T> { Context(PhantomData) }
 }
 
-impl Count<Vec<usize>> for Context<Data> {
-    type N = usize;
+impl Space<usize> for Context<Data> {
+    type Dim = Vec<usize>;
+    type Pos = (Vec<usize>, usize, usize);
     fn count(&self, dim: &Vec<usize>) -> usize {
         let pair: Pair<Data> = Construct::new();
-        let mut sum = pair.count(&dim[0]);
+        let mut sum: usize = pair.count(&dim[0]);
         let mut prod = dim[0];
         for d in &dim[1..] {
-            sum = d * sum + pair.count(d) * prod;
+            let count: usize = pair.count(d);
+            sum = d * sum + count * prod;
             prod *= *d;
         }
         sum
     }
-}
-
-impl Count<Vec<BigUint>> for Context<Data> {
-    type N = BigUint;
-    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
-        let pair: Pair<Data> = Construct::new();
-        let mut sum = pair.count(&dim[0]);
-        let mut prod = dim[0].clone();
-        for d in &dim[1..] {
-            sum = d * sum + pair.count(d) * &prod;
-            prod *= d;
-        }
-        sum
-    }
-}
-
-impl<T, U> Count<Vec<U>> for Context<Of<T>>
-    where
-        T: Construct + Count<U>,
-        for<'a> <T as Count<U>>::N: MulAssign +
-            Add<Output = <T as Count<U>>::N> +
-            Mul<Output = <T as Count<U>>::N> +
-            Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N>,
-        for<'a> &'a <T as Count<U>>::N: Mul<&'a <T as Count<U>>::N, Output = <T as Count<U>>::N>,
-        Pair: Count<<T as Count<U>>::N, N = <T as Count<U>>::N>
-{
-    type N = <T as Count<U>>::N;
-    fn count(&self, dim: &Vec<U>) -> Self::N {
-        let of: T = Construct::new();
-        let pair: Pair<Data> = Construct::new();
-        let mut sum = pair.count(&of.count(&dim[0]));
-        let mut prod = of.count(&dim[0]);
-        for d in &dim[1..] {
-            let d = of.count(d);
-            sum = &d * &sum + pair.count(&d) * &prod;
-            prod *= d;
-        }
-        sum
-    }
-}
-
-impl Zero<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
     fn zero(&self, dim: &Vec<usize>) -> (Vec<usize>, usize, usize) {
         (vec![0; dim.len()], 0, 0)
     }
-}
-
-impl Zero<Vec<BigUint>, (Vec<BigUint>, usize, BigUint)> for Context<Data> {
-    fn zero(&self, dim: &Vec<BigUint>) -> (Vec<BigUint>, usize, BigUint) {
-        (vec![0usize.into(); dim.len()], 0, 0usize.into())
-    }
-}
-
-impl<T, U, V>
-Zero<Vec<U>, (Vec<V>, usize, V)>
-for Context<Of<T>>
-    where
-        T: Construct + Count<U> + ToPos<U, V> + Zero<U, V>
-{
-    fn zero(&self, dim: &Vec<U>) -> (Vec<V>, usize, V) {
-        let of: T = Construct::new();
-        let mut v = Vec::with_capacity(dim.len());
-        for i in 0..dim.len() {
-            v.push(of.zero(&dim[i]));
-        }
-        (v, 0, of.zero(&dim[0]))
-    }
-}
-
-impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
-    type N = usize;
     fn to_index(
         &self,
         dim: &Vec<usize>,
@@ -196,8 +160,8 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
             prod *= dim[j];
         }
         // Pair doesn't care about dimension.
-        let single = pair.to_index(&0, &(min(p[ind], b), max(p[ind], b)));
-        let pos_offset = single * prod;
+        let single: usize = pair.to_index(&0, &(min(p[ind], b), max(p[ind], b)));
+        let pos_offset: usize = single * prod;
         let mut dim_index = 0;
         for i in (0..p.len()).rev() {
             if ind == i { continue; }
@@ -205,61 +169,6 @@ impl ToIndex<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
         }
         offset + pos_offset + dim_index
     }
-}
-
-impl<T, U, V> ToIndex<Vec<U>, (Vec<V>, usize, V)> for Context<Of<T>>
-    where
-        T: Construct + Count<U, N = usize> + ToIndex<U, V, N = usize>
-{
-    type N = usize;   
-    fn to_index(
-        &self,
-        dim: &Vec<U>,
-        &(ref p, ind, ref b): &(Vec<V>, usize, V)
-    ) -> usize {
-        fn subspace_offset<T, U>(v: &[U], ind: usize) -> usize
-            where T: Construct + Count<U, N = usize>
-        {
-            let of: T = Construct::new();
-            let pair: Pair<Data> = Construct::new();
-            let mut sum = 0;
-            for i in 0..ind {
-                let mut prod = 1;
-                for j in 0..v.len() {
-                    if i == j { continue; }
-                    prod *= of.count(&v[j]);
-                }
-                sum += pair.count(&of.count(&v[i])) * prod;
-            }
-            sum
-        }
-
-        use std::cmp::{ min, max };
-
-        let of: T = Construct::new();
-        let offset = subspace_offset::<T, U>(dim, ind);
-        let pair: Pair<Data> = Construct::new();
-        let mut prod = 1;
-        for j in 0..dim.len() {
-            if ind == j { continue; }
-            prod *= of.count(&dim[j]);
-        }
-        // Pair doesn't care about dimension.
-        let single = pair.to_index(&0,
-            &(min(of.to_index(&dim[ind], &p[ind]), of.to_index(&dim[ind], b)),
-             max(of.to_index(&dim[ind], &p[ind]), of.to_index(&dim[ind], b))));
-        let pos_offset = single * prod;
-        let mut dim_index = 0;
-        for i in (0..p.len()).rev() {
-            if ind == i { continue; }
-            dim_index = dim_index * of.count(&dim[i]) + of.to_index(&dim[i], &p[i]);
-        }
-        offset + pos_offset + dim_index
-    }
-}
-
-impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
-    type N = usize;
     fn to_pos(
         &self,
         dim: &Vec<usize>,
@@ -300,11 +209,51 @@ impl ToPos<Vec<usize>, (Vec<usize>, usize, usize)> for Context<Data> {
     }
 }
 
-impl ToPos<Vec<BigUint>, (Vec<BigUint>, usize, BigUint)> for Context<Data> {
-    type N = BigUint;
+impl Space<BigUint> for Context<Data> {
+    type Dim = Vec<BigUint>;
+    type Pos = (Vec<BigUint>, usize, BigUint);
+    fn count(&self, dim: &Vec<BigUint>) -> BigUint {
+        let pair: Pair<Data> = Construct::new();
+        let mut sum: BigUint = pair.count(&dim[0]);
+        let mut prod = dim[0].clone();
+        for d in &dim[1..] {
+            let count: BigUint = pair.count(d);
+            sum = d * sum + count * &prod;
+            prod *= d;
+        }
+        sum
+    }
+    fn zero(&self, dim: &Vec<BigUint>) -> (Vec<BigUint>, usize, BigUint) {
+        (vec![0usize.into(); dim.len()], 0, 0usize.into())
+    }
+    fn to_index(
+        &self,
+        dim: &Self::Dim,
+        (p, ind, b): &Self::Pos,
+    ) -> BigUint {
+        use std::cmp::{ min, max };
+
+        let ind = *ind;
+        let offset = biguint_subspace_offset(dim, ind);
+        let pair: Pair<Data> = Construct::new();
+        let mut prod: BigUint = 1usize.into();
+        for j in 0..dim.len() {
+            if ind == j { continue; }
+            prod *= &dim[j];
+        }
+        // Pair doesn't care about dimension.
+        let single: BigUint = pair.to_index(&0usize.into(), &(min(p[ind].clone(), b.clone()), max(p[ind].clone(), b.clone())));
+        let pos_offset: BigUint = single * prod;
+        let mut dim_index: BigUint = 0usize.into();
+        for i in (0..p.len()).rev() {
+            if ind == i { continue; }
+            dim_index = dim_index * &dim[i] + &p[i];
+        }
+        offset + pos_offset + dim_index
+    }
     fn to_pos(
         &self,
-        dim: &Vec<BigUint>,
+        dim: &Self::Dim,
         index: BigUint,
         &mut (ref mut p, ref mut ind, ref mut b): &mut (Vec<BigUint>, usize, BigUint)
     ) {
@@ -343,34 +292,123 @@ impl ToPos<Vec<BigUint>, (Vec<BigUint>, usize, BigUint)> for Context<Data> {
     }
 }
 
-impl<T, U, V>
-ToPos<Vec<U>, (Vec<V>, usize, V)>
-for Context<Of<T>>
-    where
-        T: Construct + Count<U, N = usize> + ToPos<U, V, N = usize> + Zero<U, V>
+impl<N, T> Space<N> for Context<Of<T>>
+    where T: Space<N>,
+          Pair<Data>: Space<N, Dim = N, Pos = (N, N)>,
+          for<'a> N: Clone +
+                     From<usize> +
+                     Ord +
+                     MulAssign<&'a N> +
+                     SubAssign<&'a N> +
+                     DivAssign<&'a N> +
+                     AddAssign<&'a N>,
+          for<'a> &'a N: Mul<&'a N, Output = N> +
+                         Div<&'a N, Output = N> +
+                         Add<&'a N, Output = N> +
+                         Sub<&'a N, Output = N>,
 {
-    type N = usize;
-    fn to_pos(
+    type Dim = Vec<T::Dim>;
+    type Pos = (Vec<T::Pos>, usize, T::Pos);
+    fn count(&self, dim: &Self::Dim) -> N {
+        let of: T = Construct::new();
+        let pair: Pair<Data> = Construct::new();
+        let mut sum: N = pair.count(&of.count(&dim[0]));
+        let mut prod = of.count(&dim[0]);
+        for d in &dim[1..] {
+            let d: N = of.count(d);
+            let count: N = pair.count(&d);
+            sum = &(&d * &sum) + &(&count * &prod);
+            prod *= &d;
+        }
+        sum
+    }
+    fn zero(&self, dim: &Self::Dim) -> Self::Pos {
+        let of: T = Construct::new();
+        let mut v = Vec::with_capacity(dim.len());
+        for i in 0..dim.len() {
+            v.push(of.zero(&dim[i]));
+        }
+        (v, 0, of.zero(&dim[0]))
+    }
+    fn to_index(
         &self,
-        dim: &Vec<U>,
-        index: usize,
-        &mut (ref mut p, ref mut ind, ref mut b): &mut (Vec<V>, usize, V)
-    ) {
-        fn ind_from_index<T, U>(v: &[U], index: usize) -> (usize, usize)
-            where T: Construct + Count<U, N = usize>
+        dim: &Self::Dim,
+        &(ref p, ind, ref b): &Self::Pos
+    ) -> N {
+        fn subspace_offset<N, T>(v: &Vec<T::Dim>, ind: usize) -> N
+            where T: Space<N>,
+                  Pair<Data>: Space<N, Dim = N>,
+                  for<'a> N: From<usize> +
+                             AddAssign<&'a N> +
+                             MulAssign<&'a N>,
+                  for<'a> &'a N: Mul<&'a N, Output = N>,
         {
             let of: T = Construct::new();
             let pair: Pair<Data> = Construct::new();
-            let mut sum = 0;
-            for i in 0..v.len() {
-                let mut prod = 1;
+            let mut sum: N = 0usize.into();
+            for i in 0..ind {
+                let mut prod: N = 1usize.into();
                 for j in 0..v.len() {
                     if i == j { continue; }
-                    prod *= of.count(&v[j]);
+                    prod *= &of.count(&v[j]);
                 }
-                let add = pair.count(&of.count(&v[i])) * prod;
-                if sum + add > index { return (i, sum); }
-                sum += add;
+                let c: N = pair.count(&of.count(&v[i]));
+                sum += &(&c * &prod);
+            }
+            sum
+        }
+
+        use std::cmp::{ min, max };
+
+        let of: T = Construct::new();
+        let offset = subspace_offset::<N, T>(dim, ind);
+        let pair: Pair<Data> = Construct::new();
+        let mut prod: N = 1usize.into();
+        for j in 0..dim.len() {
+            if ind == j { continue; }
+            prod *= &of.count(&dim[j]);
+        }
+        // Pair doesn't care about dimension.
+        let single = pair.to_index(&0usize.into(),
+            &(min(of.to_index(&dim[ind], &p[ind]), of.to_index(&dim[ind], b)),
+             max(of.to_index(&dim[ind], &p[ind]), of.to_index(&dim[ind], b))));
+        let pos_offset = &(&single * &prod);
+        let mut dim_index: N = 0usize.into();
+        for i in (0..p.len()).rev() {
+            if ind == i { continue; }
+            dim_index = &(&dim_index * &of.count(&dim[i])) + &of.to_index(&dim[i], &p[i]);
+        }
+        &(&offset + &pos_offset) + &dim_index
+    }
+    fn to_pos(
+        &self,
+        dim: &Self::Dim,
+        index: N,
+        &mut (ref mut p, ref mut ind, ref mut b): &mut Self::Pos
+    ) {
+        fn ind_from_index<N, T>(v: &Vec<T::Dim>, index: &N) -> (usize, N)
+            where T: Space<N>,
+                  Pair: Space<N, Dim = N>,
+                  for<'a> N: From<usize> +
+                             PartialOrd +
+                             AddAssign<&'a N> +
+                             MulAssign<&'a N>,
+                  for<'a> &'a N: Add<&'a N, Output = N> +
+                                 Mul<&'a N, Output = N>,
+        {
+            let of: T = Construct::new();
+            let pair: Pair<Data> = Construct::new();
+            let mut sum: N = 0usize.into();
+            for i in 0..v.len() {
+                let mut prod: N = 1usize.into();
+                for j in 0..v.len() {
+                    if i == j { continue; }
+                    prod *= &of.count(&v[j]);
+                }
+                let c: N = pair.count(&of.count(&v[i]));
+                let add: N = &c * &prod;
+                if &(&sum + &add) > index { return (i, sum); }
+                sum += &add;
             }
             (v.len(), sum)
         }
@@ -378,31 +416,31 @@ for Context<Of<T>>
         let of: T = Construct::new();
         p.clear();
         let pair_space: Pair<Data> = Construct::new();
-        let (ind_val, offset) = ind_from_index::<T, U>(dim, index);
+        let (ind_val, offset) = ind_from_index::<N, T>(dim, &index);
         // Get rid of offset.
         // The rest equals: single * prod + dim_index
-        let index = index - offset;
-        let mut prod = 1;
+        let index: N = &index - &offset;
+        let mut prod: N = 1usize.into();
         for j in 0..dim.len() {
             p.push(of.zero(&dim[j])); // zero position
             if ind_val == j { continue; }
-            prod *= of.count(&dim[j]);
+            prod *= &of.count(&dim[j]);
         }
-        let single = index / prod;
+        let single: N = &index / &prod;
 
-        let mut pair = (0, 0);
+        let mut pair = (0usize.into(), 0usize.into());
         // Pair doesn't care about dimension.
-        pair_space.to_pos(&0, single, &mut pair);
+        pair_space.to_pos(&0usize.into(), single.clone(), &mut pair);
         let (min, max) = pair;
 
         // Resolve other dimension components.
-        let mut dim_index = index - single * prod;
+        let mut dim_index: N = &index - &(&single * &prod);
         for i in (0..p.len()).rev() {
             if ind_val == i { continue; }
-            prod /= of.count(&dim[i]);
-            let p_i = dim_index / prod;
+            prod /= &of.count(&dim[i]);
+            let p_i = &dim_index / &prod;
+            dim_index -= &(&p_i * &prod);
             of.to_pos(&dim[i], p_i, &mut p[i]);
-            dim_index -= p_i * prod;
         }
         of.to_pos(&dim[ind_val], min, &mut p[ind_val]);
         of.to_pos(&dim[ind_val], max, b);
@@ -412,25 +450,42 @@ for Context<Of<T>>
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
+    use crate::*;
 
     #[test]
     fn features() {
-        is_complete::<Context, Vec<usize>, (Vec<usize>, usize, usize)>();
-        is_complete::<Context<Of<Pair>>, Vec<usize>,
-            (Vec<(usize, usize)>, usize, (usize, usize))>();
+        is_complete::<usize, Context>();
+        is_complete::<usize, Context<Of<Pair>>>();
     }
 
     #[test]
     fn data() {
         let x: Context = Construct::new();
-        let ref dim = vec![2, 2, 2];
+        let ref dim = vec![2usize, 2, 2];
         // 12 edges on a cube
         assert_eq!(x.count(dim), 12);
         assert_eq!(x.to_index(dim, &(vec![0, 0, 0], 0, 1)), 0);
         for i in 0..x.count(dim) {
             let mut pos = (vec![], 0, 0);
             x.to_pos(dim, i, &mut pos);
+            assert_eq!(x.to_index(dim, &pos), i);
+        }
+    }
+
+    #[test]
+    fn data_big() {
+        use std::convert::TryInto;
+
+        let x: Context = Construct::new();
+        let ref dim: Vec<BigUint> = vec![2usize.into(), 2usize.into(), 2usize.into()];
+        // 12 edges on a cube
+        assert_eq!(x.count(dim), 12usize.into());
+        assert_eq!(x.to_index(dim, &x.zero(dim)), 0usize.into());
+        let count = x.count(dim).try_into().unwrap();
+        for i in 0usize..count {
+            let i: BigUint = i.into();
+            let mut pos = x.zero(dim);
+            x.to_pos(dim, i.clone(), &mut pos);
             assert_eq!(x.to_index(dim, &pos), i);
         }
     }
@@ -467,5 +522,43 @@ mod tests {
         let mut pos = (vec![(0, 0), (0, 0)], 0, (0, 0));
         x.to_pos(dim, 16, &mut pos);
         assert_eq!(pos, ((vec![(0, 2), (0, 2)], 1, (1, 2))));
+    }
+
+    #[test]
+    fn of_big() {
+        fn conv((x, i, (a, b)): (Vec<(usize, usize)>, usize, (usize, usize))) -> (Vec<(BigUint, BigUint)>, usize, (BigUint, BigUint)) {
+            (x.into_iter().map(|(n, m)| (n.into(), m.into())).collect(), i, (a.into(), b.into()))
+        }
+
+        let x: Context<Of<Pair>> = Construct::new();
+        let ref dim: Vec<BigUint> = vec![3usize.into()];
+        assert_eq!(x.count(dim), 3usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1)], 0, (0, 2)))), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1)], 0, (1, 2)))), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2)], 0, (1, 2)))), 2usize.into());
+        let ref dim: Vec<BigUint> = vec![3usize.into(), 3usize.into()];
+        assert_eq!(x.count(dim), 18usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 1)], 0, (0, 2)))), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 2)], 0, (0, 2)))), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (1, 2)], 0, (0, 2)))), 2usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 1)], 0, (1, 2)))), 3usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 2)], 0, (1, 2)))), 4usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (1, 2)], 0, (1, 2)))), 5usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2), (0, 1)], 0, (1, 2)))), 6usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2), (0, 2)], 0, (1, 2)))), 7usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2), (1, 2)], 0, (1, 2)))), 8usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 1)], 1, (0, 2)))), 9usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2), (0, 1)], 1, (0, 2)))), 10usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(1, 2), (0, 1)], 1, (0, 2)))), 11usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 1)], 1, (1, 2)))), 12usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2), (0, 1)], 1, (1, 2)))), 13usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(1, 2), (0, 1)], 1, (1, 2)))), 14usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 1), (0, 2)], 1, (1, 2)))), 15usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(0, 2), (0, 2)], 1, (1, 2)))), 16usize.into());
+        assert_eq!(x.to_index(dim, &conv((vec![(1, 2), (0, 2)], 1, (1, 2)))), 17usize.into());
+
+        let mut pos = x.zero(dim);
+        x.to_pos(dim, 16usize.into(), &mut pos);
+        assert_eq!(pos, conv((vec![(0, 2), (0, 2)], 1, (1, 2))));
     }
 }

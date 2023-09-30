@@ -82,9 +82,10 @@ use std::marker::PhantomData;
 
 pub use construct::Construct;
 pub use count::Count;
+pub use zero::Zero;
 pub use to_index::ToIndex;
 pub use to_pos::ToPos;
-pub use zero::Zero;
+
 pub use power_set::PowerSet;
 pub use dimension_n::DimensionN;
 pub use dimension::Dimension;
@@ -99,11 +100,14 @@ pub use either::{Either, Select};
 pub use homotopy::{Homotopy, HPoint};
 pub use num::BigUint;
 
+pub mod space;
+
 mod construct;
 mod count;
+mod zero;
 mod to_index;
 mod to_pos;
-mod zero;
+
 mod power_set;
 mod dimension_n;
 mod dimension;
@@ -124,40 +128,10 @@ pub struct Data;
 /// Used to combine the dimensional and position types.
 pub struct Of<T>(PhantomData<T>);
 
-#[cfg(test)]
-pub fn does_count<T, U>()
-    where
-        T: Count<U>
-{}
-
-#[cfg(test)]
-pub fn does_zero<T, U, V>()
-    where
-        T: Zero<U, V>
-{}
-
-#[cfg(test)]
-pub fn does_to_index<T, U, V>()
-    where
-        T: ToIndex<U, V>
-{}
-
-#[cfg(test)]
-pub fn does_to_pos<T, U, V>()
-    where
-        T: ToPos<U, V>
-{}
-
+// N - numeric type
 // T - discrete space
-// U - dimension
-// V - Position
 #[cfg(test)]
-pub fn is_complete<T, U, V>()
+pub fn is_complete<N, T>()
     where
-        T: Count<U> + Zero<U, V> + ToIndex<U, V> + ToPos<U, V>
-{
-    does_count::<T, U>();
-    does_zero::<T, U, V>();
-    does_to_index::<T, U, V>();
-    does_to_pos::<T, U, V>();
-}
+        T: space::Space<N>
+{}
