@@ -147,6 +147,29 @@ mod tests {
         assert_eq!(new_pos, (2, 1));
     }
 
+    fn conv_pos((a, b): (usize, usize)) -> (BigUint, BigUint) {
+        (a.into(), b.into())
+    }
+
+    #[test]
+    fn data_big() {
+        let x: NeqPair = Construct::new();
+        let ref dim: BigUint = 4usize.into();
+        assert_eq!(x.count(dim), 12usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((0, 1))), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((1, 0))), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((0, 2))), 2usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((2, 0))), 3usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((1, 2))), 4usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((2, 1))), 5usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((0, 3))), 6usize.into());
+        let mut new_pos = x.zero(dim);
+        x.to_pos(dim, 6usize.into(), &mut new_pos);
+        assert_eq!(new_pos, conv_pos((0, 3)));
+        x.to_pos(dim, 5usize.into(), &mut new_pos);
+        assert_eq!(new_pos, conv_pos((2, 1)));
+    }
+
     #[test]
     fn of() {
         let x: NeqPair<Of<DimensionN>> = Construct::new();
@@ -166,5 +189,34 @@ mod tests {
         x.to_pos(dim, 10, &mut pos);
         assert_eq!(&pos.0, &[0, 1]);
         assert_eq!(&pos.1, &[1, 1]);
+    }
+
+    fn conv(v: Vec<usize>) -> Vec<BigUint> {
+        v.into_iter().map(|n| n.into()).collect()
+    }
+
+    fn conv_pos_of((a, b): (Vec<usize>, Vec<usize>)) -> (Vec<BigUint>, Vec<BigUint>) {
+        (conv(a), conv(b))
+    }
+
+    #[test]
+    fn of_big() {
+        let x: NeqPair<Of<DimensionN>> = Construct::new();
+        let ref dim = conv(vec![2, 2]);
+        assert_eq!(x.count(dim), 12usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of((vec![0, 0], vec![1, 0]))), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of((vec![0, 0], vec![0, 1]))), 2usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of((vec![1, 0], vec![0, 1]))), 4usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of((vec![0, 0], vec![1, 1]))), 6usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of((vec![1, 0], vec![1, 1]))), 8usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of((vec![0, 1], vec![1, 1]))), 10usize.into());
+        let mut pos = x.zero(dim);
+        for i in 0usize..6 {
+            x.to_pos(dim, i.into(), &mut pos);
+            // println!("{} {}", &min[], &max[]);
+            assert_eq!(x.to_index(dim, &pos), i.into());
+        }
+        x.to_pos(dim, 10usize.into(), &mut pos);
+        assert_eq!(pos, conv_pos_of((vec![0, 1], vec![1, 1])));
     }
 }

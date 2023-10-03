@@ -177,6 +177,23 @@ mod tests {
         assert_eq!(&new_pos, &[0, 1]);
     }
 
+    fn conv(v: Vec<usize>) -> Vec<BigUint> {
+        v.into_iter().map(|n| n.into()).collect()
+    }
+
+    #[test]
+    fn data_big() {
+        let x: DimensionN = Construct::new();
+        let ref dim: Vec<BigUint> = conv(vec![3, 3]);
+        assert_eq!(x.count(dim), 9usize.into());
+        assert_eq!(x.to_index(dim, &conv(vec![0, 0])), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv(vec![1, 0])), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv(vec![0, 1])), 3usize.into());
+        let mut new_pos = x.zero(dim);
+        x.to_pos(dim, 3usize.into(), &mut new_pos);
+        assert_eq!(new_pos, conv(vec![0, 1]));
+    }
+
     #[test]
     fn of() {
         let x: DimensionN<Of<Pair>> = Construct::new();
@@ -190,6 +207,24 @@ mod tests {
         x.to_pos(dim, 3, &mut pos);
         assert_eq!(pos[0], (0, 1));
         assert_eq!(pos[1], (0, 2));
+    }
+
+    fn conv_pair(v: Vec<(usize, usize)>) -> Vec<(BigUint, BigUint)> {
+        v.into_iter().map(|(a, b)| (a.into(), b.into())).collect()
+    }
+
+    #[test]
+    fn of_big() {
+        let x: DimensionN<Of<Pair>> = Construct::new();
+        let ref dim = conv(vec![3, 4]);
+        assert_eq!(x.count(dim), 18usize.into());
+        assert_eq!(x.to_index(dim, &conv_pair(vec![(0, 1), (0, 1)])), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv_pair(vec![(0, 2), (0, 1)])), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv_pair(vec![(1, 2), (0, 1)])), 2usize.into());
+        assert_eq!(x.to_index(dim, &conv_pair(vec![(0, 1), (0, 2)])), 3usize.into());
+        let mut pos = x.zero(dim);
+        x.to_pos(dim, 3usize.into(), &mut pos);
+        assert_eq!(pos, conv_pair(vec![(0, 1), (0, 2)]));
     }
 
     #[test]

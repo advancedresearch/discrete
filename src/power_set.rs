@@ -178,6 +178,24 @@ mod tests {
         assert_eq!(&a, &[0, 3]);
     }
 
+    fn conv(v: Vec<usize>) -> Vec<BigUint> {
+        v.into_iter().map(|n| n.into()).collect()
+    }
+
+    #[test]
+    fn data_big() {
+        let x: PowerSet = Construct::new();
+        let ref dim: BigUint = 6usize.into();
+        assert_eq!(x.count(dim), 64usize.into());
+        assert_eq!(x.to_index(dim, &vec![]), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv(vec![0])), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv(vec![1])), 2usize.into());
+        assert_eq!(x.to_index(dim, &conv(vec![0, 1])), 3usize.into());
+        let mut a = vec![];
+        x.to_pos(dim, 9usize.into(), &mut a);
+        assert_eq!(a, conv(vec![0, 3]));
+    }
+
     #[test]
     fn of() {
         let x: PowerSet<Of<Pair>> = Construct::new();
@@ -194,5 +212,27 @@ mod tests {
         let mut a = vec![(0, 0); 64];
         x.to_pos(dim, 7, &mut a);
         assert_eq!(a[0], (0, 1));
+    }
+
+    fn conv_pos_of(v: Vec<(usize, usize)>) -> Vec<(BigUint, BigUint)> {
+        v.into_iter().map(|(a, b)| (a.into(), b.into())).collect()
+    }
+
+    #[test]
+    fn of_big() {
+        let x: PowerSet<Of<Pair>> = Construct::new();
+        let ref dim: BigUint = 4usize.into();
+        assert_eq!(x.count(dim), 64usize.into());
+        assert_eq!(x.to_index(dim, &vec![]), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(0, 1)])), 1usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(0, 2)])), 2usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(0, 1), (0, 2)])), 3usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(1, 2)])), 4usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(0, 1), (1, 2)])), 5usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(0, 2), (1, 2)])), 6usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos_of(vec![(0, 1), (0, 2), (1, 2)])), 7usize.into());
+        let mut a = conv_pos_of(vec![(0, 0); 64]);
+        x.to_pos(dim, 7usize.into(), &mut a);
+        assert_eq!(a[0], (0usize.into(), 1usize.into()));
     }
 }

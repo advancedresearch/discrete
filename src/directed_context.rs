@@ -229,8 +229,36 @@ mod tests {
         for i in 0..x.count(dim) {
             let mut pos = (vec![], 0, 0);
             x.to_pos(dim, i, &mut pos);
-            println!("{:?}", pos);
+            // println!("{:?}", pos);
             assert_eq!(x.to_index(dim, &pos), i);
+        }
+        // assert!(false);
+    }
+
+    fn conv(v: Vec<usize>) -> Vec<BigUint> {
+        v.into_iter().map(|n| n.into()).collect()
+    }
+
+    fn conv_pos((v, a, b): (Vec<usize>, usize, usize)) -> (Vec<BigUint>, usize, BigUint) {
+        (conv(v), a, b.into())
+    }
+
+    #[test]
+    fn data_big() {
+        use std::convert::TryInto;
+
+        let x: DirectedContext = Construct::new();
+        let ref dim = conv(vec![2, 2, 2]);
+        // 12 edges on a cube * 2 = 24 directed edges
+        assert_eq!(x.count(dim), 24usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((vec![0, 0, 0], 0, 1))), 0usize.into());
+        assert_eq!(x.to_index(dim, &conv_pos((vec![1, 0, 0], 0, 0))), 1usize.into());
+        let count: usize = x.count(dim).try_into().unwrap();
+        for i in 0usize..count {
+            let mut pos = x.zero(dim);
+            x.to_pos(dim, i.into(), &mut pos);
+            // println!("{:?}", pos);
+            assert_eq!(x.to_index(dim, &pos), i.into());
         }
         // assert!(false);
     }

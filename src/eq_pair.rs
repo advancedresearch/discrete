@@ -116,4 +116,27 @@ mod tests {
             assert_eq!(eq_pair.to_index(n, &pos), x);
         }
     }
+
+    #[test]
+    fn test_eq_pair_big() {
+        use std::convert::TryInto;
+
+        // 1 0 0 0
+        // 2 3 0 0
+        // 4 5 6 0
+        // 7 8 9 10
+
+        let eq_pair: EqPair = Construct::new();
+        let ref n: BigUint = 4usize.into();
+        let count = eq_pair.count(n);
+        assert_eq!(count, 10usize.into());
+
+        let mut pos = eq_pair.zero(n);
+        let count: usize = count.try_into().unwrap();
+        for x in 0..count {
+            eq_pair.to_pos(n, x.into(), &mut pos);
+            println!("{:?}", pos);
+            assert_eq!(eq_pair.to_index(n, &pos), x.into());
+        }
+    }
 }

@@ -232,15 +232,61 @@ mod test {
     }
 
     #[test]
+    fn data_big() {
+        use std::convert::TryInto;
+
+        let permutation: Permutation = Construct::new();
+        let ins: Vec<BigUint> = vec![
+            1usize.into(),
+            2usize.into(),
+            3usize.into(),
+            4usize.into(),
+        ];
+        let outs: Vec<BigUint> = vec![
+            1usize.into(),
+            2usize.into(),
+            6usize.into(),
+            24usize.into(),
+        ];
+        for i in 0..ins.len() {
+            assert_eq!(permutation.count(&ins[i]), outs[i]);
+        }
+
+        let mut pos: Vec<BigUint> = Vec::new();
+        let ref dim: BigUint = 4usize.into();
+        let count: usize = permutation.count(dim).try_into().unwrap();
+        for i in 0usize..count {
+            permutation.to_pos(dim, i.into(), &mut pos);
+            let index = permutation.to_index(dim, &pos);
+            assert_eq!(index, i.into());
+        }
+    }
+
+    #[test]
     fn of() {
         let space: Permutation<Of<Pair>> = Construct::new();
         let ref dim = 3;
         let count = space.count(dim);
-        let mut pos = Vec::new();
+        let mut pos = space.zero(dim);
         for i in 0..count {
             space.to_pos(dim, i, &mut pos);
             let index = space.to_index(dim, &pos);
             assert_eq!(index, i);
+        }
+    }
+
+    #[test]
+    fn of_big() {
+        use std::convert::TryInto;
+
+        let space: Permutation<Of<Pair>> = Construct::new();
+        let ref dim: BigUint = 3usize.into();
+        let count: usize = space.count(dim).try_into().unwrap();
+        let mut pos = space.zero(dim);
+        for i in 0..count {
+            space.to_pos(dim, i.into(), &mut pos);
+            let index = space.to_index(dim, &pos);
+            assert_eq!(index, i.into());
         }
     }
 }
