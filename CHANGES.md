@@ -1,3 +1,7 @@
+# 0.5
+
+- Added support for `BigUint`
+
 # 0.4
 
 - Added `SqPair` space
