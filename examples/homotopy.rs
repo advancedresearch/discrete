@@ -48,7 +48,7 @@ fn main() {
     let s: EqPair = Construct::new();
     let dim = 4;
     let n = s.count(&dim);
-    println!("{}", n);
+    println!("dim = {}, count = {}", dim, n);
     let mut pos = (0, 0);
     for x in 0..n {
         s.to_pos(&n, x, &mut pos);
@@ -68,19 +68,19 @@ fn main() {
     println!("Another way to construct a homotopy level 2 is to use `EqPair<Of<EqPair>>`:");
     let s: EqPair<Of<EqPair>> = Construct::new();
     let dim = 2;
-    println!("{}", s.count(&dim));
+    println!("dim = {}, count = {}", dim, s.count(&dim));
 
     println!("Similarly, at homotopy level 3 one can use `EqPair<Of<EqPair<Of<EqPair>>>>`:");
     let s: EqPair<Of<EqPair<Of<EqPair>>>> = Construct::new();
     let dim = 2;
-    println!("{}", s.count(&dim));
+    println!("dim = {}, count = {}", dim, s.count(&dim));
 
     println!("However, for the more general case is it easier to use the `Homotopy` space:");
     let s: Homotopy = Construct::new();
     let level = 2;
     let pieces = 2;
     let n = s.count(&(level, pieces));
-    println!("{}", n);
+    println!("level = {}, pieces = {}, count = {}", level, pieces, n);
 
     let mut pos = s.zero(&(level, pieces));
     for x in 0..n {
@@ -95,7 +95,7 @@ fn main() {
     let pos = Path(Box::new((a, b)));
     let level = pos.level();
     println!("{:?} - level {}", pos, level);
-    println!("{}", s.to_index(&(level, 2), &pos));
+    println!("index = {}", s.to_index(&(level, 2), &pos));
     println!("================================");
 
     println!("One can also construct a homotopy of another discrete space, e.g. `Homotopy<Of<Pair>>`:");

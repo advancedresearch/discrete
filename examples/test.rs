@@ -3,24 +3,25 @@ extern crate discrete;
 use discrete::*;
 
 fn main() {
-    let s: Context = Construct::new();
-    let dim: Vec<BigUint> = vec![3usize.into(), 2usize.into()];
-    let mut pos = s.zero(&dim);
-    let c: Vec<u64> = s.count(&dim).iter_u64_digits().collect();
-    let count: usize = c[0] as usize;
-    for i in 0..count {
-        let i: BigUint = i.into();
-        s.to_pos(&dim, i, &mut pos);
-        println!("{:?}", pos);
-    }
-    println!("===");
+    let s: Pair<Of<PowerSet<Of<Permutation>>>> = Construct::new();
+    let dim: BigUint = 2usize.into();
 
-    let s: Context = Construct::new();
-    let dim = vec![3, 2];
-    let mut pos = s.zero(&dim);
+    let dim = dim.pow(1);
     let count = s.count(&dim);
-    for i in 0..count {
-        s.to_pos(&dim, i, &mut pos);
-        println!("{:?}", pos);
+
+    let mut i: BigUint = count.clone() - 1usize;
+    let mut pos = s.zero(&dim);
+    let mut j = 0;
+    let z: BigUint = 0usize.into();
+    while i >= z {
+        if j > 3 {break};
+
+        s.to_pos(&dim, i.clone(), &mut pos);
+        println!("{}: {:?}", i, pos);
+        
+        i -= 1usize;
+        j += 1;
     }
+
+    println!("{}", count);
 }
