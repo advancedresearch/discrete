@@ -5,7 +5,7 @@ PAIR OF POWERSETS
 In this example we will try to solve the following problem:
 
     Alice is fishing, and she knows of 10 fish species in the ocean.
-    After 2 hours, Alice catched 4 different species.
+    After 2 hours, Alice caught 4 different species.
 
     As she watches the sunset, she wonders how many possible worlds
     she could catch exactly 4 species out of the unknown number of
