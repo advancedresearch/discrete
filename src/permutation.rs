@@ -12,7 +12,7 @@ use std::ops::{
 use std::convert::TryInto;
 use std::fmt::Debug;
 
-use num::BigUint;
+use crate::BigUint;
 
 use Construct;
 use Data;

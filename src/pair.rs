@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use num::BigUint;
+use crate::BigUint;
 
 use Construct;
 use Data;
@@ -25,7 +25,7 @@ impl Space<usize> for Pair<Data> {
         }
     }
     fn to_pos(&self, _dim: &usize, index: usize, pos: &mut (usize, usize)) {
-        use num::integer::Roots;
+        use num_integer::Roots;
         let index = index as u128;
         let max = (1 + (8 * index + 1).sqrt()) / 2;
         let d = max * (max + 1) / 2;

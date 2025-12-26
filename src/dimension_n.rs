@@ -8,7 +8,7 @@ use std::ops::{
     DivAssign,
 };
 
-use num::BigUint;
+use crate::BigUint;
 
 use Construct;
 use Data;
