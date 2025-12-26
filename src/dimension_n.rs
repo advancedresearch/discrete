@@ -8,12 +8,13 @@ use std::ops::{
     DivAssign,
 };
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    space::Space,
+};
 
 /// Dimension is a list of numbers, position is a list of numbers.
 pub struct DimensionN<T = Data>(PhantomData<T>);

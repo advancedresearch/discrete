@@ -2,8 +2,8 @@
 
 use std::ops::{Mul, Div, Sub, Add};
 
-use Construct;
-use space::Space;
+use crate::Construct;
+use crate::space::Space;
 
 impl<T, U> Construct for (T, U)
     where T: Construct, U: Construct,

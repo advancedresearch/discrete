@@ -11,13 +11,14 @@ use std::ops::{
     AddAssign,
 };
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use Pair;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    Pair,
+    space::Space
+};
 
 /// A discrete space that can model spatial operations over arbitrary states,
 /// therefore useful for context analysis.

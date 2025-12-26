@@ -1,11 +1,12 @@
 use std::marker::PhantomData;
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    space::Space,
+};
 
 /// Dimension is natural number, position is (min, max).
 pub struct Pair<T = Data>(PhantomData<T>);

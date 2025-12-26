@@ -2,8 +2,8 @@ use std::marker::PhantomData;
 
 use std::ops::{Add, Sub};
 
-use Construct;
-use space::Space;
+use crate::Construct;
+use crate::space::Space;
 
 /// Selects between two spaces.
 pub struct Either<T, U>(PhantomData<T>, PhantomData<U>);

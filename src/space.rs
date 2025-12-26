@@ -1,12 +1,13 @@
 //! Helper trait for implementing discrete spaces.
 
-use Construct;
-use Count;
-use Zero;
-use ToIndex;
-use ToPos;
-
-use BigUint;
+use crate::{
+    BigUint,
+    Construct,
+    Count,
+    Zero,
+    ToIndex,
+    ToPos,
+};
 
 /// Implemented by discrete spaces.
 pub trait Space<N>: Construct + Sized {
