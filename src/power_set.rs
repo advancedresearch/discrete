@@ -4,8 +4,8 @@ use std::fmt::Debug;
 
 use std::ops::{BitOrAssign, Rem, Shr};
 
-use num::BigUint;
-use num::pow::Pow;
+use crate::BigUint;
+use num_traits::pow::Pow;
 
 use Construct;
 use Of;

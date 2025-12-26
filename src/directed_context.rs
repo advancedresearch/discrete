@@ -12,7 +12,7 @@ use std::ops::{
     SubAssign,
 };
 
-use num::BigUint;
+use crate::BigUint;
 
 use Construct;
 use Data;

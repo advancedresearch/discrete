@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use num::BigUint;
+use crate::BigUint;
 
 use Construct;
 use Data;

@@ -76,7 +76,9 @@
 //! The dimension and position types are compositions,
 //! given by the type of the constructed space.
 
-extern crate num;
+extern crate num_bigint;
+extern crate num_integer;
+extern crate num_traits;
 
 use std::marker::PhantomData;
 
@@ -98,7 +100,7 @@ pub use context::Context;
 pub use directed_context::DirectedContext;
 pub use either::{Either, Select};
 pub use homotopy::{Homotopy, HPoint};
-pub use num::BigUint;
+pub use num_bigint::BigUint;
 
 pub mod space;
 
@@ -128,8 +130,8 @@ pub struct Data;
 /// Used to combine the dimensional and position types.
 pub struct Of<T>(PhantomData<T>);
 
-// N - numeric type
-// T - discrete space
+/// N - numeric type
+/// T - discrete space
 #[cfg(test)]
 pub fn is_complete<N, T>()
     where

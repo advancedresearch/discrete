@@ -11,7 +11,7 @@ use std::ops::{
     AddAssign,
 };
 
-use num::BigUint;
+use crate::BigUint;
 
 use Construct;
 use Data;
