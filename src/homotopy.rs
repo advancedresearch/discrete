@@ -1,12 +1,13 @@
 use std::marker::PhantomData;
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use EqPair;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    EqPair,
+    space::Space
+};
 
 /// Stores a higher order point for homotopy spaces.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

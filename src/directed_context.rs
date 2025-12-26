@@ -12,14 +12,15 @@ use std::ops::{
     SubAssign,
 };
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use NeqPair;
-use Pair;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    NeqPair,
+    Pair,
+    space::Space,
+};
 
 /// Same as `Context`, but for directed edges.
 pub struct DirectedContext<T = Data>(PhantomData<T>);
@@ -49,7 +50,7 @@ impl Space<usize> for DirectedContext<Data> {
         &self, dim: &Vec<usize>,
         &(ref p, ind, b): &(Vec<usize>, usize, usize)
     ) -> usize {
-        use Context;
+        use crate::Context;
 
         let context: Context<Data> = Construct::new();
         let index: usize = context.to_index(dim, &(p.clone(), ind, b));
@@ -65,7 +66,7 @@ impl Space<usize> for DirectedContext<Data> {
         index: usize,
         pos: &mut (Vec<usize>, usize, usize)
     ) {
-        use Context;
+        use crate::Context;
 
         let context: Context<Data> = Construct::new();
         if index % 2 == 0 {
@@ -100,7 +101,7 @@ impl Space<BigUint> for DirectedContext<Data> {
         &self, dim: &Self::Dim,
         (p, ind, b): &Self::Pos,
     ) -> BigUint {
-        use Context;
+        use crate::Context;
 
         let context: Context<Data> = Construct::new();
         let index: BigUint = context.to_index(dim, &(p.clone(), *ind, b.clone()));
@@ -116,7 +117,7 @@ impl Space<BigUint> for DirectedContext<Data> {
         index: BigUint,
         pos: &mut Self::Pos,
     ) {
-        use Context;
+        use crate::Context;
 
         let context: Context<Data> = Construct::new();
         if &index % 2usize == 0usize.into() {
@@ -178,7 +179,7 @@ impl<N, T> Space<N> for DirectedContext<Of<T>>
         dim: &Self::Dim,
         &(ref p, ind, ref b): &Self::Pos,
     ) -> N {
-        use Context;
+        use crate::Context;
 
         let of: T = Construct::new();
         let context: Context<Of<T>> = Construct::new();
@@ -196,7 +197,7 @@ impl<N, T> Space<N> for DirectedContext<Of<T>>
         index: N,
         pos: &mut Self::Pos,
     ) {
-        use Context;
+        use crate::Context;
 
         let context: Context<Of<T>> = Construct::new();
         if &index % 2usize == 0usize.into() {

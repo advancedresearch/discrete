@@ -4,13 +4,15 @@ use std::fmt::Debug;
 
 use std::ops::{BitOrAssign, Rem, Shr};
 
-use crate::BigUint;
 use num_traits::pow::Pow;
 
-use Construct;
-use Of;
-use Data;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Of,
+    Data,
+    space::Space,
+};
 
 /// Dimension is natural number, position is a list of numbers.
 pub struct PowerSet<T = Data>(PhantomData<T>);

@@ -1,11 +1,12 @@
 use std::marker::PhantomData;
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    space::Space,
+};
 
 /// Dimension is natural number, position is the same as index.
 pub struct Dimension<T = Data>(PhantomData<T>);

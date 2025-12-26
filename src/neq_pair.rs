@@ -1,11 +1,12 @@
 use std::marker::PhantomData;
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    space::Space,
+};
 
 /// Dimension is natural number, position is (a, b).
 /// Represents all directional pairs that has not same element for `a` and `b`.
@@ -21,7 +22,7 @@ impl Space<usize> for NeqPair<Data> {
     fn count(&self, dim: &usize) -> usize { dim * (dim - 1) }
     fn zero(&self, _dim: &usize) -> (usize, usize) { (0, 0) }
     fn to_index(&self, dim: &usize, &(a, b): &(usize, usize)) -> usize {
-        use Pair;
+        use crate::Pair;
 
         let pair: Pair<Data> = Construct::new();
         if a < b {
@@ -31,7 +32,7 @@ impl Space<usize> for NeqPair<Data> {
         }
     }
     fn to_pos(&self, dim: &usize, index: usize, pos: &mut (usize, usize)) {
-        use Pair;
+        use crate::Pair;
 
         let pair: Pair<Data> = Construct::new();
         if index % 2 == 0 {
@@ -53,7 +54,7 @@ impl Space<BigUint> for NeqPair<Data> {
     }
     fn zero(&self, _dim: &BigUint) -> (BigUint, BigUint) { (0usize.into(), 0usize.into()) }
     fn to_index(&self, dim: &Self::Dim, (a, b): &Self::Pos) -> BigUint {
-        use Pair;
+        use crate::Pair;
 
         let pair: Pair<Data> = Construct::new();
         if a < b {
@@ -63,7 +64,7 @@ impl Space<BigUint> for NeqPair<Data> {
         }
     }
     fn to_pos(&self, dim: &Self::Dim, index: BigUint, pos: &mut Self::Pos) {
-        use Pair;
+        use crate::Pair;
 
         let pair: Pair<Data> = Construct::new();
         if &index % 2usize == 0usize.into() {

@@ -12,12 +12,13 @@ use std::ops::{
 use std::convert::TryInto;
 use std::fmt::Debug;
 
-use crate::BigUint;
-
-use Construct;
-use Data;
-use Of;
-use space::Space;
+use crate::{
+    BigUint,
+    Construct,
+    Data,
+    Of,
+    space::Space,
+};
 
 /// Dimension is natural number, position is a list of numbers.
 pub struct Permutation<T = Data>(PhantomData<T>);
